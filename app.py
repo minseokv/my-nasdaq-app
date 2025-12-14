@@ -9,7 +9,7 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 고강도 정밀 CSS
+# 2. 정밀 디자인 CSS
 st.markdown("""
 <style>
     /* 전체 배경 */
@@ -17,11 +17,12 @@ st.markdown("""
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목: 🦁 민석이의 아래 나스닥100 투자 수직 정렬 */
-    .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; text-align: left; }
-    .indented-line { padding-left: 36px; display: block; }
+    /* [1] 제목: 🦁 민석이의 아래에 나스닥100 투자 수직 정렬 */
+    .title-area { margin-bottom: 25px; text-align: left; }
+    .title-row1 { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; }
+    .title-row2 { padding-left: 38px; font-size: 26px; font-weight: 800; margin-top: -5px; display: block; }
 
-    /* [2] 점수 산출 근거: 2단 그리드 */
+    /* [2] 점수 산출 근거: 3열 그리드 */
     .basis-container {
         display: grid; grid-template-columns: repeat(3, 1fr);
         background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
@@ -31,41 +32,57 @@ st.markdown("""
     .basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [3] ★ 라디오 버튼 공통: 동그라미 숨기기 ★ */
+    /* [3] ★ 캘린더 네비게이션: 한 줄 중앙 배치 + 여유로운 간격 ★ */
+    .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important; /* 중앙 정렬 */
+        gap: 15px !important; /* 버튼 간격 여유 */
+        width: 100% !important;
+    }
+    
+    /* 라디오 버튼 동그라미 숨기기 */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label > div:first-child {
         display: none !important;
     }
-    div[data-testid="stRadio"] > div[role="radiogroup"] {
-        gap: 5px !important;
-    }
-    div[data-testid="stRadio"] > div[role="radiogroup"] > label {
-        flex: 1 !important;
+
+    .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] > label {
         background-color: #1E1E1E !important;
         border: 1px solid #444 !important;
         border-radius: 8px !important;
-        padding: 10px 2px !important;
-        font-size: 14px !important;
+        padding: 8px 15px !important; /* 내부 여백으로 널찍하게 */
+        font-size: 15px !important;
         font-weight: bold !important;
-        text-align: center !important;
-        justify-content: center !important;
         white-space: nowrap !important;
-        cursor: pointer;
+        min-width: 50px;
+        text-align: center;
     }
+
+    /* 날짜가 써있는 가운데 버튼만 더 길게 */
+    .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] > label:nth-child(2) {
+        flex: 2 !important;
+        min-width: 150px !important;
+    }
+
+    /* 강조 색상 (민트) */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label[data-baseweb="radio"] {
         border-color: #00FFD1 !important;
         color: #00FFD1 !important;
     }
 
-    /* [4] 달력 네비게이션 전용: 무조건 한 줄 */
-    .cal-nav-box div[data-testid="stRadio"] > div[role="radiogroup"] {
-        flex-wrap: nowrap !important;
-    }
-
-    /* [5] 흐름 분석 버튼 전용: 3열 그리드 (윗줄 3개, 아랫줄 2개) */
+    /* [4] 흐름 분석: 민석님이 건들지 말라고 했을 때의 예쁜 한 줄 배치로 복구 */
     .chart-period-box div[data-testid="stRadio"] > div[role="radiogroup"] {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
+        display: flex !important;
+        flex-direction: row !important;
         flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+    }
+    .chart-period-box div[data-testid="stRadio"] > div[role="radiogroup"] > label {
+        flex: none !important;
+        width: auto !important;
+        padding: 6px 12px !important;
     }
 
     /* 달력 본체 폭 고정 */
@@ -88,7 +105,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터 처리 로직
+# 3. 데이터 처리
 @st.cache_data
 def get_market_data(ticker="QQQ"):
     df = yf.Ticker(ticker).history(period="5y")
@@ -109,16 +126,16 @@ last_row = df.iloc[-1]
 curr_score = int(last_row['Score'])
 
 # 4. 화면 구성 시작
-st.markdown(f'<div class="main-title">🦁 민석이의<br><span class="indented-line">나스닥100 투자</span></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="title-area"><div class="title-row1">🦁 민석이의</div><div class="title-row2">나스닥100 투자</div></div>', unsafe_allow_html=True)
 
-# [점수 박스]
+# [상단 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
 elif curr_score >= 85: g_t, g_d, g_c = "📉 수익 실현 권장", "상승의 끝자락일 수 있습니다.<br><span class='point-red'>20% 매도</span>해 현금을 확보하세요.", "#EF5350"
 else: g_t, g_d, g_c = "💤 적립 유지", "평범한 우상향 구간입니다.<br>매일 QLD 만원 적립을 유지하세요.", "#00FFD1"
 
-st.markdown(f"""<div class="combined-score-container"><div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div><div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class="combined-score-container"><div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:70px; font-weight:bold; line-height:1;">{curr_score}</span></div><div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div></div>""", unsafe_allow_html=True)
 
 # [근거 그리드]
 st.markdown(f"""<div class="basis-container"><div class="basis-item"><div class="basis-label">심리(RSI)</div><div class="basis-value">{last_row['RSI']:.1f}</div></div><div class="basis-item"><div class="basis-label">자금(MFI)</div><div class="basis-value">{last_row['MFI']:.1f}</div></div><div class="basis-item"><div class="basis-label">밴드위치</div><div class="basis-value">{last_row['PctB']:.1f}%</div></div></div>""", unsafe_allow_html=True)
@@ -136,8 +153,8 @@ col_left, col_right = st.columns([1, 1.6], gap="medium")
 with col_left:
     st.subheader("🗓️ 점수 캘린더")
     
-    # [달력 네비게이션] 동그라미 제거 및 한 줄 고정
-    st.markdown('<div class="cal-nav-box">', unsafe_allow_html=True)
+    # [달력 네비게이션] ◀      2025년 12월      ▶
+    st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     current_label = f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"
     nav_pick = st.radio("cal_nav", [" ◀ ", current_label, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
     
@@ -154,7 +171,7 @@ with col_left:
     st.markdown('<div class="cal-wrapper">', unsafe_allow_html=True)
     calendar.setfirstweekday(calendar.SUNDAY)
     cal = calendar.monthcalendar(st.session_state.cal_year, st.session_state.cal_month)
-    h = f'<div style="background-color:#161618; border-radius:15px; padding:12px; border:1px solid #333; margin-top:10px;"><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:10px;"><div style="color:#FF5252;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#5C9DFF;">토</div></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:5px;">'
+    h = f'<div style="background-color:#161618; border-radius:15px; padding:12px; border:1px solid #333; margin-top:5px;"><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:10px;"><div style="color:#FF5252;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#5C9DFF;">토</div></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:5px;">'
     for week in cal:
         for day in week:
             if day == 0: h += '<div></div>'; continue
@@ -171,7 +188,6 @@ with col_left:
 
 with col_right:
     st.subheader("📈 흐름 분석")
-    # [흐름 분석 버튼] 3열 그리드 적용 (3년, 5년 아래로)
     st.markdown('<div class="chart-period-box">', unsafe_allow_html=True)
     period = st.radio("P", ["1개월", "3개월", "6개월", "3년", "5년"], horizontal=True, label_visibility="collapsed")
     st.markdown('</div>', unsafe_allow_html=True)
