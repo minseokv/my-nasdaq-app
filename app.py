@@ -9,18 +9,18 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 디자인 및 반응형 정밀 조정 CSS
+# 2. 고강도 정밀 CSS (PC/S24 기기별 대응)
 st.markdown("""
 <style>
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; color: #FFFFFF !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [제목] 호랑이 아이콘 기준 정밀 들여쓰기 */
+    /* [1] 제목: 호랑이 기준 정밀 들여쓰기 */
     .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 20px; }
-    .indented-line { padding-left: 38px; display: block; }
+    .indented-line { padding-left: 36px; display: block; }
 
-    /* [산출 근거] 3열 그리드 유지 */
+    /* [2] 산출 근거: 3열 그리드 */
     .basis-container {
         display: grid; grid-template-columns: repeat(3, 1fr);
         background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
@@ -30,64 +30,61 @@ st.markdown("""
     .basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [중요] 달력 버튼 폰에서도 무조건 한 줄로 고정 */
-    .cal-nav-block [data-testid="column"] {
-        width: fit-content !important;
-        flex: unset !important;
-        min-width: 0px !important;
-    }
-    .cal-nav-block [data-testid="stHorizontalBlock"] {
+    /* [3] 달력 내비게이션: 폰/PC 모두 강제 한 줄 배치 */
+    .cal-nav-container {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        justify-content: center !important;
         align-items: center !important;
-        gap: 15px !important;
+        justify-content: center !important;
+        width: 100% !important;
+        gap: 10px !important;
+        margin-bottom: 10px;
     }
+    .cal-nav-btn { flex: 0 0 50px !important; }
+    .cal-nav-text { flex: 1 !important; text-align: center; font-weight: bold; font-size: 18px; }
 
-    /* 버튼 스타일 (민트/초록) */
+    /* 버튼 공통 스타일 (민트) */
     .stButton>button {
         background-color: #1E1E1E !important; color: #00FFD1 !important;
         border: 1px solid #00FFD1 !important; border-radius: 8px !important;
-        font-weight: bold !important; padding: 0px 10px !important; height: 35px !important;
+        font-weight: bold !important; width: 100% !important; height: 40px !important;
     }
 
-    /* [중요] 흐름 분석 버튼: PC에서는 한 줄, 폰에서는 3열 그리드 */
+    /* [4] 흐름 분석 버튼: PC에서는 한 줄(노랩), 폰에서는 그리드 */
     div.stRadio > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important; /* PC 기본: 한 줄 */
+        flex-wrap: nowrap !important; /* PC: 무조건 한 줄 */
         gap: 8px !important;
-        width: 100% !important;
     }
     div.stRadio > div[role="radiogroup"] > label {
         flex: 1 !important;
         background-color: #1E1E1E !important; border: 1px solid #444 !important;
-        border-radius: 6px !important; padding: 8px 0 !important; font-size: 12px !important;
+        border-radius: 6px !important; padding: 10px 0 !important;
         justify-content: center !important; text-align: center !important;
+        white-space: nowrap !important; /* 글자 쪼개짐 방지 */
+        font-size: 13px !important;
     }
-    div.stRadio > div[role="radiogroup"] > label[data-baseweb="radio"] { border-color: #00FFD1 !important; }
 
-    /* 갤럭시 S24 등 모바일 환경 전용 설정 */
+    /* 모바일 환경 최적화 */
     @media (max-width: 768px) {
-        /* 점수 박스 세로 정렬 */
         .combined-score-container { flex-direction: column !important; }
-        .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
-        
-        /* 폰에서 차트 버튼은 너무 좁아지니 3열 그리드로 변경 */
+        .score-part { border-right: none !important; border-bottom: 1px solid #333; }
+        /* 폰에서는 버튼이 너무 좁으니 3열 그리드로 전환 */
         div.stRadio > div[role="radiogroup"] {
             display: grid !important;
             grid-template-columns: repeat(3, 1fr) !important;
             flex-wrap: wrap !important;
         }
-        
-        /* 캘린더 크기 폰에 맞춤 */
         .cal-wrapper { max-width: 100% !important; }
     }
 
-    /* PC에서 달력 크기 너무 커지지 않게 고정 */
-    .cal-wrapper { max-width: 380px; margin: 0 auto; }
-    
+    /* PC 전용: 달력 크기 제한 */
+    @media (min-width: 769px) {
+        .cal-wrapper { max-width: 380px; margin: 0 auto; }
+    }
+
     .point-red { color: #EF5350 !important; font-weight: bold !important; }
     .combined-score-container { display: flex; background-color: #161618; border: 2px solid #333; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
     .score-part { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #1E1E1E; padding: 20px; }
@@ -124,36 +121,28 @@ df = get_market_data()
 last_row = df.iloc[-1]
 curr_score = int(last_row['Score'])
 
-# 4. 화면 구성
-# [제목] 🦁 호랑이 옆 정렬 완성
-st.markdown(f"""
-<div class="main-title">
-    🦁 민석이의<br>
-    <span class="indented-line">나스닥100 투자</span>
-</div>
-""", unsafe_allow_html=True)
-
-# [상단] AI 점수 통합 박스
+# 4. 가이드 텍스트
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
 elif curr_score >= 85: g_t, g_d, g_c = "📉 수익 실현 권장", "상승의 끝자락일 수 있습니다.<br><span class='point-red'>20% 매도</span>해 현금을 확보하세요.", "#EF5350"
 else: g_t, g_d, g_c = "💤 적립 유지", "평범한 우상향 구간입니다.<br>매일 QLD 만원 적립을 유지하세요.", "#00FFD1"
 
+# 5. 위젯 모드
+if st.query_params.get("view") == "widget":
+    st.markdown(f'<div style="text-align:center; background:#161618; padding:40px 20px; border-radius:20px; border:3px solid #333;"><p style="color:#888; font-size:18px;">나스닥 AI 점수</p><h1 style="font-size:110px; color:#00FFD1; margin:0;">{curr_score}</h1><p style="font-size:26px; color:{g_c}; font-weight:bold; margin-top:20px;">{g_t}</p></div>', unsafe_allow_html=True)
+    st.stop()
+
+# 6. 화면 구성 시작
+st.markdown(f'<div class="main-title">🦁 민석이의<br><span class="indented-line">나스닥100 투자</span></div>', unsafe_allow_html=True)
+
 st.markdown(f"""
 <div class="combined-score-container">
-    <div class="score-part">
-        <span style="color:#888; font-size:13px;">현재 AI 점수</span>
-        <span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span>
-    </div>
-    <div class="guide-part">
-        <h3 style="margin:0; color:{g_c} !important;">{g_t}</h3>
-        <p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p>
-    </div>
+    <div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div>
+    <div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div>
 </div>
 """, unsafe_allow_html=True)
 
-# [중단] 점수 산출 근거 (2단 레이아웃)
 st.markdown(f"""
 <div class="basis-container">
     <div class="basis-item"><div class="basis-label">심리(RSI)</div><div class="basis-value">{last_row['RSI']:.1f}</div></div>
@@ -162,25 +151,31 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# [달력 & 차트 섹션] PC는 2열, 폰은 1열 자동 전환
-col_mid1, col_mid2 = st.columns([1, 1.6], gap="medium")
+# 달력 & 차트 2단 레이아웃 (PC 전용)
+col_m1, col_m2 = st.columns([1, 1.6], gap="medium")
 
-with col_mid1:
+with col_m1:
     st.subheader("🗓️ 점수 캘린더")
     if 'cal_year' not in st.session_state: st.session_state.cal_year = datetime.now().year
     if 'cal_month' not in st.session_state: st.session_state.cal_month = datetime.now().month
-    def move_calendar(delta):
-        st.session_state.cal_month += delta
+    def move_cal(d):
+        st.session_state.cal_month += d
         if st.session_state.cal_month > 12: st.session_state.cal_month = 1; st.session_state.cal_year += 1
         elif st.session_state.cal_month < 1: st.session_state.cal_month = 12; st.session_state.cal_year -= 1
 
-    # 달력 내비게이션 (폰에서도 강제로 한 줄 정렬하기 위해 컨테이너 클래스 지정)
-    st.markdown('<div class="cal-nav-block">', unsafe_allow_html=True)
-    c_nav1, c_nav2, c_nav3 = st.columns([1, 4, 1])
-    with c_nav1: st.button("◀", key="prev_cal", on_click=move_calendar, args=(-1,))
-    with c_nav2: st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
-    with c_nav3: st.button("▶", key="next_cal", on_click=move_calendar, args=(1,))
-    st.markdown('</div>', unsafe_allow_html=True)
+    # 달력 헤더 커스텀 (CSS 강제 정렬용 HTML 클래스 사용)
+    st.markdown(f"""
+    <div class="cal-nav-container">
+        <div class="cal-nav-btn" id="btn_prev"></div>
+        <div class="cal-nav-text">{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>
+        <div class="cal-nav-btn" id="btn_next"></div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 버튼 배치를 위해 빈 공간에 실제 스트림릿 버튼 삽입 (오차 없는 정렬을 위해 컬럼 재배치)
+    c_btn1, c_btn2, c_btn3 = st.columns([1, 3, 1])
+    with c_btn1: st.button("◀", key="pc1", on_click=move_cal, args=(-1,))
+    with c_btn3: st.button("▶", key="pc2", on_click=move_cal, args=(1,))
 
     st.markdown('<div class="cal-wrapper">', unsafe_allow_html=True)
     calendar.setfirstweekday(calendar.SUNDAY)
@@ -203,20 +198,19 @@ with col_mid1:
             h += f'<span style="font-size:8px; color:#666;">{day}</span><span style="font-size:12px; font-weight:bold; color:{sc};">{stxt}</span></div>'
     st.markdown(h + '</div></div></div>', unsafe_allow_html=True)
 
-with col_mid2:
+with col_m2:
     st.subheader("📈 흐름 분석")
     period = st.radio("P", ["1개월", "3개월", "6개월", "3년", "5년"], horizontal=True, label_visibility="collapsed")
     cdf = df.tail({"1개월":22, "3개월":63, "6개월":126, "3년":756, "5년":1260}[period])
     b_d, s_d = len(cdf[cdf['Score'] <= 40]), len(cdf[cdf['Score'] >= 85])
     st.markdown(f'<div style="font-size:12px; color:#AAA; text-align:right; margin-bottom:5px;">💰 40↓: <b style="color:#4CAF50;">{b_d}회</b> | 🔥 85↑: <b style="color:#EF5350;">{s_d}회</b></div>', unsafe_allow_html=True)
-    
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Scatter(x=cdf.index, y=cdf['Close'], name="주가", line=dict(color='#FF5252', width=2)), secondary_y=False)
     fig.add_trace(go.Scatter(x=cdf.index, y=cdf['Score'], name="점수", fill='tozeroy', fillcolor='rgba(76, 175, 80, 0.1)', line=dict(color='rgba(76, 175, 80, 0.4)')), secondary_y=True)
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(l=0,r=0,t=10,b=0), height=350, showlegend=False, xaxis=dict(gridcolor='#333', tickformat='%y-%m'), yaxis=dict(gridcolor='#333'), yaxis2=dict(range=[0, 100], showgrid=False), hovermode="x unified", dragmode=False)
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-# 하단 테이블
+# 하단 가이드
 st.divider()
-st.subheader("📋 실전 운용 전략 가이드")
-st.markdown("""<table class="strategy-table"><thead><tr><th>구간</th><th>상태</th><th>Action Plan</th></tr></thead><tbody><tr><td style="color:#4CAF50;">0~20</td><td>🚨공황</td><td>인생역전: 보유 현금 <span class="point-red">50% TQQQ 매수</span></td></tr><tr><td style="color:#81C784;">21~30</td><td>🛒침체</td><td>저가매수: 보유 현금 <span class="point-red">30% TQQQ 매수</span></td></tr><tr><td style="color:#A5D6A7;">31~40</td><td>🌱조정</td><td>가벼운매수: 보유 현금 <span class="point-red">10% TQQQ 매수</span></td></tr><tr><td style="color:#00FFD1;">41~84</td><td>💤중립</td><td><b>QLD 적립 유지</b></td></tr><tr><td style="color:#EF5350;">85~100</td><td>🔥과열</td><td>수익실현: 보유 수량 <span class="point-red">20% 매도</span></td></tr></tbody></table>""", unsafe_allow_html=True)
+st.subheader("📋 실전 운용 가이드")
+st.markdown("""<table class="strategy-table"><thead><tr><th>점수</th><th>상태</th><th>Action Plan</th></tr></thead><tbody><tr><td style="color:#4CAF50;">0~20</td><td>🚨공황</td><td>인생역전: <span class="point-red">TQQQ 50% 매수</span></td></tr><tr><td style="color:#81C784;">21~30</td><td>🛒침체</td><td>저가매수: <span class="point-red">TQQQ 30% 매수</span></td></tr><tr><td style="color:#A5D6A7;">31~40</td><td>🌱조정</td><td>가벼운매수: <span class="point-red">TQQQ 10% 매수</span></td></tr><tr><td style="color:#00FFD1;">41~84</td><td>💤중립</td><td><b>QLD 적립 유지</b></td></tr><tr><td style="color:#EF5350;">85~100</td><td>🔥과열</td><td>수익실현: <span class="point-red">20% 매도</span></td></tr></tbody></table>""", unsafe_allow_html=True)
