@@ -9,7 +9,7 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 갤럭시 S24 전용 정밀 강제 레이아웃 CSS
+# 2. 강력 레이아웃 강제 CSS (스트림릿 모바일 규칙 원천 무효화)
 st.markdown("""
 <style>
     /* 전체 배경 */
@@ -17,11 +17,12 @@ st.markdown("""
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목 정렬: 🦁 아이콘 기준 '민'자와 아래 '나'자 수직 라인 완벽 일치 */
-    .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; text-align: left; }
-    .indented-line { padding-left: 36px; display: block; }
+    /* [1] 제목: 🦁 민석이의 '민'자와 아래 '나'자 수직 라인 정밀 정렬 */
+    .title-area { margin-bottom: 25px; text-align: left; }
+    .title-row { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; }
+    .title-indented { padding-left: 36px; font-size: 26px; font-weight: 800; margin-top: -5px; display: block; }
 
-    /* [2] 점수 산출 근거: 2단 그리드 */
+    /* [2] 점수 산출 근거: 상단 항목 / 하단 수치 2단 그리드 */
     .basis-container {
         display: grid; grid-template-columns: repeat(3, 1fr);
         background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
@@ -31,38 +32,38 @@ st.markdown("""
     .basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [3] ★ 달력 버튼 위치 고정 (7컬럼 강제 정렬) ★ */
-    /* 달력 본체 폭(380px) 안에서 7개의 칸이 폰에서도 절대로 깨지지 않게 합니다. */
-    .forced-7-cols [data-testid="stHorizontalBlock"] {
+    /* [3] ★ 캘린더 버튼 위치 고정 (7컬럼 강제 정렬) ★ */
+    /* 폰에서 컬럼이 깨지는 스트림릿의 300px 규칙을 완전히 파괴합니다. */
+    .cal-nav-row div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-wrap: nowrap !important; /* 줄바꿈 원천 봉쇄 */
+        align-items: center !important;
+        justify-content: space-between !important;
         width: 100% !important;
-        gap: 0 !important;
     }
-    .forced-7-cols [data-testid="column"] {
-        flex: 1 !important;
-        min-width: 0px !important; /* 폰에서 100%로 늘어나는 속성 파괴 */
+    .cal-nav-row div[data-testid="column"] {
+        min-width: 0px !important; /* 모바일에서 늘어나는 성질 제거 */
+        flex: 1 1 0% !important;
         text-align: center !important;
     }
-
-    /* 버튼 스타일 (크기 복구 및 가시성) */
-    .stButton > button {
-        background-color: #1E1E1E !important;
-        color: #00FFD1 !important;
-        border: 1px solid #00FFD1 !important;
-        border-radius: 8px !important;
-        font-weight: bold !important;
-        width: 100% !important;
-        height: 40px !important;
-        font-size: 16px !important;
-        padding: 0 !important;
+    /* 버튼이 들어가는 첫 번째(일요일 위)와 마지막(토요일 위) 컬럼 폭 고정 */
+    .cal-nav-row div[data-testid="column"]:nth-of-type(1),
+    .cal-nav-row div[data-testid="column"]:nth-of-type(3) {
+        flex: 0 0 50px !important;
     }
 
-    /* 달력 본체 폭 고정 */
+    .stButton>button {
+        background-color: #1E1E1E !important; color: #00FFD1 !important;
+        border: 1px solid #00FFD1 !important; border-radius: 8px !important;
+        font-weight: bold !important; height: 40px !important; width: 100% !important;
+        font-size: 18px !important; padding: 0 !important;
+    }
+
+    /* [4] 달력 본체 폭 고정 및 PC 중앙 정렬 */
     .cal-wrapper { max-width: 380px; margin: 0 auto; }
 
-    /* [4] 차트 기간 버튼: PC에서 무조건 가로 한 줄 */
+    /* [5] 차트 기간 버튼: PC에서 무조건 가로 한 줄 */
     div.stRadio > div[role="radiogroup"] {
         display: flex !important; flex-direction: row !important;
         flex-wrap: nowrap !important; gap: 5px !important;
@@ -70,24 +71,27 @@ st.markdown("""
     div.stRadio > div[role="radiogroup"] > label {
         flex: 1 !important; white-space: nowrap !important;
         background-color: #1E1E1E !important; border: 1px solid #444 !important;
-        padding: 10px 2px !important; font-size: 12px !important;
+        padding: 10px 2px !important; font-size: 13px !important;
         text-align: center !important; justify-content: center !important;
     }
 
+    /* 모바일 반응형 미세 조정 */
     @media (max-width: 768px) {
         .combined-score-container { flex-direction: column !important; }
         .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
         .score-part span:last-child { font-size: 60px !important; }
+        /* 폰에서는 차트 버튼 3열 그리드로 전환 */
         div.stRadio > div[role="radiogroup"] {
             display: grid !important; grid-template-columns: repeat(3, 1fr) !important;
             flex-wrap: wrap !important;
         }
         .cal-wrapper { max-width: 100% !important; }
+        .cal-nav-row { max-width: 100% !important; }
     }
 
     .point-red { color: #EF5350 !important; font-weight: bold !important; }
     .combined-score-container { display: flex; background-color: #161618; border: 2px solid #333; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
-    .score-part { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #1E1E1E; padding: 20px; }
+    .score-part { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #1E1E1E; padding: 15px; }
     .guide-part { flex: 2; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
     .strategy-table { width: 100%; border-collapse: collapse; background-color: #161618; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
     .strategy-table th { background-color: #262730; color: #888; padding: 10px; font-size: 12px; }
@@ -121,14 +125,9 @@ df = get_market_data()
 last_row = df.iloc[-1]
 curr_score = int(last_row['Score'])
 
-# 4. 화면 구성 시작
-# [제목] 들여쓰기 픽셀 매칭
-st.markdown(f"""
-<div class="main-title">
-    🦁 민석이의<br>
-    <span class="indented-line">나스닥100 투자</span>
-</div>
-""", unsafe_allow_html=True)
+# 4. 화면 출력 시작
+# [제목] 들여쓰기 픽셀 정밀 정렬
+st.markdown(f"""<div class="title-area"><div class="title-row">🦁 민석이의</div><div class="title-indented">나스닥100 투자</div></div>""", unsafe_allow_html=True)
 
 # [상단 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
@@ -150,21 +149,16 @@ def move_cal(d):
     if st.session_state.cal_month > 12: st.session_state.cal_month = 1; st.session_state.cal_year += 1
     elif st.session_state.cal_month < 1: st.session_state.cal_month = 12; st.session_state.cal_year -= 1
 
-col_left, col_right = st.columns([1, 1.6], gap="medium")
+col_l, col_r = st.columns([1, 1.6], gap="medium")
 
-with col_left:
+with col_l:
     st.subheader("🗓️ 점수 캘린더")
-    
-    # [★ 핵심 해결책: 7컬럼 시스템 ★]
-    # 달력의 월화수목금토일 7칸과 똑같은 구조로 버튼을 배치합니다.
-    st.markdown('<div class="forced-7-cols">', unsafe_allow_html=True)
-    c = st.columns(7)
-    with c[0]: # 일요일 위: 왼쪽 버튼
-        st.button("◀", key="p_c", on_click=move_cal, args=(-1,))
-    with c[1:6][2]: # 중앙: 년/월 표시 (3번째 칸쯤에 배치)
-        st.markdown(f"<div style='width:180px; margin-left:-70px; text-align:center; font-weight:bold; font-size:18px; line-height:40px; white-space:nowrap;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
-    with c[6]: # 토요일 위: 오른쪽 버튼
-        st.button("▶", key="n_c", on_click=move_cal, args=(1,))
+    # [수정] ★ cal-nav-row 영역에만 강력한 가로 고정 규칙 적용 ★
+    st.markdown('<div class="cal-nav-row">', unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 4, 1])
+    with c1: st.button("◀", key="prev_cal", on_click=move_cal, args=(-1,))
+    with c2: st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; line-height:40px;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
+    with c3: st.button("▶", key="next_cal", on_click=move_cal, args=(1,))
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="cal-wrapper">', unsafe_allow_html=True)
@@ -181,11 +175,14 @@ with col_left:
                 if not row.empty:
                     val = int(row['Score'].iloc[0]); chg = row['Change'].iloc[0]; stxt = str(val)
                     bg, sc = ("#1B3320", "#4CAF50") if chg >= 0 else ("#331B1B", "#EF5350")
-            except: pass
-            h += f'<div style="aspect-ratio:1; background-color:{bg}; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center;"><span style="font-size:8px; color:#666;">{day}</span><span style="font-size:12px; font-weight:bold; color:{sc};">{stxt}</span></div>'
+                    if d_str == datetime.now().strftime('%Y-%m-%d'): h += f'<div style="aspect-ratio:1; background-color:{bg}; border:1.5px solid #FFF; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center;">'
+                    else: h += f'<div style="aspect-ratio:1; background-color:{bg}; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center;">'
+                else: h += f'<div style="aspect-ratio:1; background-color:#262730; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center;">'
+            except: h += f'<div style="aspect-ratio:1; background-color:#262730; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center;">'
+            h += f'<span style="font-size:8px; color:#666;">{day}</span><span style="font-size:12px; font-weight:bold; color:{sc};">{stxt}</span></div>'
     st.markdown(h + '</div></div></div>', unsafe_allow_html=True)
 
-with col_right:
+with col_r:
     st.subheader("📈 흐름 분석")
     period = st.radio("P", ["1개월", "3개월", "6개월", "3년", "5년"], horizontal=True, label_visibility="collapsed")
     cdf = df.tail({"1개월":22, "3개월":63, "6개월":126, "3년":756, "5년":1260}[period])
