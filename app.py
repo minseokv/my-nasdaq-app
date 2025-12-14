@@ -9,18 +9,18 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 강력 레이아웃 강제 CSS
+# 2. 정밀 레이아웃 CSS
 st.markdown("""
 <style>
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; color: #FFFFFF !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목: 호랑이 아이콘 기준 정밀 들여쓰기 */
-    .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; }
+    /* [제목] 호랑이 아이콘 기준 정밀 들여쓰기 */
+    .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; text-align: left; }
     .indented-line { padding-left: 36px; display: block; }
 
-    /* [2] 점수 산출 근거: 상하단 2단 그리드 */
+    /* [산출 근거] 2단 그리드 */
     .basis-container {
         display: grid; grid-template-columns: repeat(3, 1fr);
         background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
@@ -30,53 +30,47 @@ st.markdown("""
     .basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [3] ★ 달력 네비게이션: 컬럼 시스템 강제 고정 ★ */
-    /* 폰에서 세로로 쌓이는 것을 막기 위해 모든 하위 요소를 가로로 강제 정렬 */
-    div[data-testid="stHorizontalBlock"] {
+    /* [달력 버튼] 폰에서도 무조건 한 줄 고정 (특정 영역만 타겟팅) */
+    .cal-nav-area [data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
         justify-content: center !important;
-        width: 100% !important;
     }
-    div[data-testid="column"] {
+    .cal-nav-area [data-testid="column"] {
         min-width: 0px !important;
-        flex: 1 1 auto !important;
         width: auto !important;
-    }
-    /* 일요일(1번째)과 토요일(3번째) 버튼 위치 확보 */
-    div[data-testid="column"]:nth-of-type(1), 
-    div[data-testid="column"]:nth-of-type(3) {
-        flex: 0 0 50px !important; /* 버튼 폭 고정 */
+        flex: 1 1 auto !important;
     }
 
-    .stButton > button {
+    .stButton>button {
         background-color: #1E1E1E !important; color: #00FFD1 !important;
         border: 1px solid #00FFD1 !important; border-radius: 8px !important;
         font-weight: bold !important; height: 38px !important; width: 100% !important;
     }
 
-    /* [4] 달력/차트 크기 최적화 */
+    /* [PC 달력 크기 고정] */
     .cal-wrapper { max-width: 380px; margin: 0 auto; }
 
-    /* [5] 차트 기간 버튼 정렬 */
+    /* [차트 버튼] PC 한 줄 / 모바일 그리드 */
     div.stRadio > div[role="radiogroup"] {
         display: flex !important; flex-direction: row !important;
-        flex-wrap: nowrap !important; gap: 5px !important;
+        flex-wrap: nowrap !important; gap: 6px !important;
     }
     div.stRadio > div[role="radiogroup"] > label {
         flex: 1 !important; white-space: nowrap !important;
         background-color: #1E1E1E !important; border: 1px solid #444 !important;
-        padding: 10px 2px !important; font-size: 12px !important;
+        border-radius: 6px !important; padding: 10px 2px !important; font-size: 12px !important;
         text-align: center !important; justify-content: center !important;
     }
 
+    /* 모바일 대응 */
     @media (max-width: 768px) {
         .combined-score-container { flex-direction: column !important; }
         .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
         .score-part span:last-child { font-size: 60px !important; }
-        /* 폰에서만 차트 버튼 3열 그리드 */
+        /* 폰에서 차트 버튼 3열 그리드 */
         div.stRadio > div[role="radiogroup"] {
             display: grid !important; grid-template-columns: repeat(3, 1fr) !important;
             flex-wrap: wrap !important;
@@ -127,8 +121,8 @@ elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조�
 elif curr_score >= 85: g_t, g_d, g_c = "📉 수익 실현 권장", "상승의 끝자락일 수 있습니다.<br><span class='point-red'>20% 매도</span>해 현금을 확보하세요.", "#EF5350"
 else: g_t, g_d, g_c = "💤 적립 유지", "평범한 우상향 구간입니다.<br>매일 QLD 만원 적립을 유지하세요.", "#00FFD1"
 
-# 5. 화면 출력 시작
-# [제목] 호랑이 기준 들여쓰기 완성
+# 5. 화면 출력
+# [제목] 🦁 호랑이 옆 들여쓰기 픽셀 정밀 정렬
 st.markdown(f"""
 <div class="main-title">
     🦁 민석이의<br>
@@ -140,11 +134,11 @@ st.markdown(f"""
 st.markdown(f"""
 <div class="combined-score-container">
     <div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div>
-    <div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div>
+    <div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:14px; line-height:1.5;">{g_d}</p></div>
 </div>
 """, unsafe_allow_html=True)
 
-# [근거 그리드] (심리 자금 밴드 / 점수 2단 구성)
+# [근거 그리드] (심리/자금/밴드 2단 배치)
 st.markdown(f"""
 <div class="basis-container">
     <div class="basis-item"><div class="basis-label">심리(RSI)</div><div class="basis-value">{last_row['RSI']:.1f}</div></div>
@@ -153,7 +147,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# [달력 & 차트] PC는 가로 2열 / 폰은 세로 1열
+# [달력 & 차트 섹션] PC는 2열 / 폰은 세로 1열 (겹침 방지 복구)
 col_mid1, col_mid2 = st.columns([1, 1.6], gap="medium")
 
 with col_mid1:
@@ -165,11 +159,13 @@ with col_mid1:
         if st.session_state.cal_month > 12: st.session_state.cal_month = 1; st.session_state.cal_year += 1
         elif st.session_state.cal_month < 1: st.session_state.cal_month = 12; st.session_state.cal_year -= 1
 
-    # 달력 내비게이션 (S24 무조건 한 줄 고정)
+    # 달력 내비게이션 (cal-nav-area 클래스로 묶어 폰에서도 무조건 한 줄)
+    st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     c_nav1, c_nav2, c_nav3 = st.columns([1, 4, 1])
     with c_nav1: st.button("◀", key="p_c", on_click=move_cal, args=(-1,))
     with c_nav2: st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; line-height:38px;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
     with c_nav3: st.button("▶", key="n_c", on_click=move_cal, args=(1,))
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="cal-wrapper">', unsafe_allow_html=True)
     calendar.setfirstweekday(calendar.SUNDAY)
