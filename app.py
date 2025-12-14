@@ -18,9 +18,8 @@ st.markdown("""
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
     /* [1] 제목: 🦁 민석이의 '민'자와 아래 '나'자 수직 라인 1px 오차 없이 정렬 */
-    .title-area { margin-bottom: 25px; text-align: left; }
-    .title-row-1 { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; line-height: 1.2; }
-    .title-row-2 { padding-left: 36px; font-size: 26px; font-weight: 800; line-height: 1.2; margin-top: 2px; }
+    .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; text-align: left; }
+    .indented-line { padding-left: 36px; display: block; }
 
     /* [2] 점수 산출 근거: 3열 상하 2단 그리드 */
     .basis-container {
@@ -42,8 +41,8 @@ st.markdown("""
         width: 100% !important;
     }
     .cal-nav-wrapper div[data-testid="column"] {
-        min-width: 0px !important; /* 768px 미만 쌓기 규칙 파괴 */
         width: auto !important;
+        min-width: 0px !important; /* 768px 미만 쌓기 규칙 파괴 */
         flex: 1 1 auto !important;
     }
 
@@ -85,7 +84,7 @@ st.markdown("""
     .point-red { color: #EF5350 !important; font-weight: bold !important; }
     .combined-score-container { display: flex; background-color: #161618; border: 2px solid #333; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
     .score-part { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #1E1E1E; padding: 20px; }
-    .guide-part { flex: 2; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+    .guide-part { flex: 2; padding: 25px; display: flex; flex-direction: column; justify-content: center; }
     .strategy-table { width: 100%; border-collapse: collapse; background-color: #161618; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
     .strategy-table th { background-color: #262730; color: #888; padding: 10px; font-size: 12px; }
     .strategy-table td { padding: 12px 5px; text-align: center; color: #E0E0E0; font-size: 13px; border-bottom: 1px solid #333; }
@@ -110,19 +109,24 @@ def get_market_data(ticker="QQQ"):
 df = get_market_data(); last_row = df.iloc[-1]; curr_score = int(last_row['Score'])
 
 # 4. 화면 구성 시작
-# [제목] 정밀 수직 정렬
-st.markdown(f'<div class="title-area"><div class="title-row-1">🦁 민석이의</div><div class="title-row-2">나스닥100 투자</div></div>', unsafe_allow_html=True)
+# [제목] 🦁 민석이의 아래 나스닥100 투자 정밀 정렬
+st.markdown(f"""
+<div class="main-title">
+    🦁 민석이의<br>
+    <span class="indented-line">나스닥100 투자</span>
+</div>
+""", unsafe_allow_html=True)
 
-# [상단 박스]
+# [상단 점수 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
 elif curr_score >= 85: g_t, g_d, g_c = "📉 수익 실현 권장", "상승의 끝자락일 수 있습니다.<br><span class='point-red'>20% 매도</span>해 현금을 확보하세요.", "#EF5350"
 else: g_t, g_d, g_c = "💤 적립 유지", "평범한 우상향 구간입니다.<br>매일 QLD 만원 적립을 유지하세요.", "#00FFD1"
 
-st.markdown(f"""<div class="combined-score-container"><div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div><div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class="combined-score-container"><div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div><div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:14px; line-height:1.5;">{g_d}</p></div></div>""", unsafe_allow_html=True)
 
-# [근거 그리드]
+# [근거 그리드] (2단 구성)
 st.markdown(f"""<div class="basis-container"><div class="basis-item"><div class="basis-label">심리(RSI)</div><div class="basis-value">{last_row['RSI']:.1f}</div></div><div class="basis-item"><div class="basis-label">자금(MFI)</div><div class="basis-value">{last_row['MFI']:.1f}</div></div><div class="basis-item"><div class="basis-label">밴드위치</div><div class="basis-value">{last_row['PctB']:.1f}%</div></div></div>""", unsafe_allow_html=True)
 
 # 5. 달력 & 차트 섹션
@@ -133,17 +137,16 @@ def move_cal(d):
     if st.session_state.cal_month > 12: st.session_state.cal_month = 1; st.session_state.cal_year += 1
     elif st.session_state.cal_month < 1: st.session_state.cal_month = 12; st.session_state.cal_year -= 1
 
-# 메인 섹션 분리 (PC 가로 / 모바일 세로)
 col_left, col_right = st.columns([1, 1.6], gap="medium")
 
 with col_left:
     st.subheader("🗓️ 점수 캘린더")
-    # [수정] ★ cal-nav-wrapper 영역에만 초강력 가로 정렬 고정 규칙 적용 ★
+    # [수정] ★ cal-nav-wrapper 영역에만 강력한 가로 고정 규칙 적용 ★
     st.markdown('<div class="cal-nav-wrapper">', unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 4, 1])
-    with c1: st.button("◀", key="p_c", on_click=move_cal, args=(-1,))
+    with c1: st.button("◀", key="prev_cal", on_click=move_cal, args=(-1,))
     with c2: st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; line-height:38px;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
-    with c3: st.button("▶", key="n_c", on_click=move_cal, args=(1,))
+    with c3: st.button("▶", key="next_cal", on_click=move_cal, args=(1,))
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="cal-grid-wrapper">', unsafe_allow_html=True)
