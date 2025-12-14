@@ -9,7 +9,7 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 고강도 레이아웃 강제 집행 CSS
+# 2. 정밀 레이아웃 CSS (특정 영역만 강제 정렬)
 st.markdown("""
 <style>
     /* 전체 배경 */
@@ -17,14 +17,11 @@ st.markdown("""
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목 정렬: 호랑이 옆 '민'자와 아래 '나'자 수직 정렬 */
+    /* [제목] 호랑이 기준 정밀 들여쓰기 수직 정렬 */
     .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; text-align: left; }
-    .indented-line { 
-        padding-left: 36px; /* 호랑이 아이콘 너비만큼 정밀 들여쓰기 */
-        display: block; 
-    }
+    .indented-line { padding-left: 36px; display: block; }
 
-    /* [2] 점수 산출 근거: 2단 그리드 */
+    /* [산출 근거] 2단 그리드 */
     .basis-container {
         display: grid; grid-template-columns: repeat(3, 1fr);
         background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
@@ -34,69 +31,51 @@ st.markdown("""
     .basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [3] ★ 캘린더 버튼 완전 정복 (S24 무조건 한 줄 고정) ★ */
-    /* 모바일에서 컬럼을 세로로 쌓는 스트림릿의 768px 미디어 쿼리를 강제로 무력화합니다. */
-    div[data-testid="stColumn"] {
+    /* [★ 달력 버튼 정렬 해결책 ★] */
+    /* 메인 레이아웃은 건드리지 않고, cal-nav-area 내부의 컬럼만 한 줄로 고정합니다. */
+    .cal-nav-area div[data-testid="column"] {
         min-width: 0px !important;
         flex: 1 1 0% !important;
     }
-    
-    /* 달력 네비게이션 영역만 따로 잡아서 가로 정렬 강제 */
-    .cal-nav-area [data-testid="stHorizontalBlock"] {
+    .cal-nav-area div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-wrap: nowrap !important; /* 줄바꿈 절대 방지 */
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
     }
 
-    /* 버튼 크기 및 모양 (뚱뚱해지지 않게 고정) */
+    /* 버튼 크기 및 모양 고정 */
     .stButton > button {
-        background-color: #1E1E1E !important;
-        color: #00FFD1 !important;
-        border: 1px solid #00FFD1 !important;
-        border-radius: 8px !important;
-        font-weight: bold !important;
-        width: 45px !important; /* 버튼 너비 고정 */
-        height: 40px !important;
-        padding: 0 !important;
-        margin: 0 auto !important;
-        display: block !important;
+        background-color: #1E1E1E !important; color: #00FFD1 !important;
+        border: 1px solid #00FFD1 !important; border-radius: 8px !important;
+        font-weight: bold !important; height: 38px !important; width: 45px !important;
+        padding: 0 !important; margin: 0 auto !important; display: block !important;
     }
 
-    /* [4] 달력 본체 크기 및 PC 중앙 정렬 */
-    .cal-wrapper { 
-        max-width: 380px; 
-        margin: 0 auto; 
-    }
+    /* PC 달력 크기 제한 및 중앙 정렬 */
+    .cal-wrapper { max-width: 380px; margin: 0 auto; }
 
-    /* [5] 차트 기간 버튼: PC에서 무조건 가로 한 줄 */
+    /* 차트 기간 버튼 정렬 (PC 한 줄 유지) */
     div.stRadio > div[role="radiogroup"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 5px !important;
+        display: flex !important; flex-direction: row !important;
+        flex-wrap: nowrap !important; gap: 5px !important;
     }
     div.stRadio > div[role="radiogroup"] > label {
-        flex: 1 !important;
-        white-space: nowrap !important;
-        background-color: #1E1E1E !important;
-        border: 1px solid #444 !important;
-        padding: 8px 2px !important;
-        font-size: 12px !important;
-        text-align: center !important;
-        justify-content: center !important;
+        flex: 1 !important; white-space: nowrap !important;
+        background-color: #1E1E1E !important; border: 1px solid #444 !important;
+        padding: 10px 2px !important; font-size: 12px !important;
+        text-align: center !important; justify-content: center !important;
     }
 
     @media (max-width: 768px) {
         .combined-score-container { flex-direction: column !important; }
         .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
         .score-part span:last-child { font-size: 60px !important; }
-        /* 폰에서는 차트 버튼이 너무 많으므로 3열 그리드로 전환 (가독성) */
+        /* 폰에서만 차트 버튼 3열 그리드 */
         div.stRadio > div[role="radiogroup"] {
-            display: grid !important;
-            grid-template-columns: repeat(3, 1fr) !important;
+            display: grid !important; grid-template-columns: repeat(3, 1fr) !important;
             flex-wrap: wrap !important;
         }
         .cal-wrapper { max-width: 100% !important; }
@@ -112,7 +91,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터 처리
+# 3. 데이터 처리 로직
 @st.cache_data
 def get_market_data(ticker="QQQ"):
     df = yf.Ticker(ticker).history(period="5y")
@@ -138,14 +117,9 @@ df = get_market_data()
 last_row = df.iloc[-1]
 curr_score = int(last_row['Score'])
 
-# 4. 화면 출력 시작
-# [제목] 🦁 아이콘 기준 들여쓰기 픽셀 정밀 정렬
-st.markdown(f"""
-<div class="main-title">
-    🦁 민석이의<br>
-    <span class="indented-line">나스닥100 투자</span>
-</div>
-""", unsafe_allow_html=True)
+# 4. 화면 구성
+# [제목] 🦁 아이콘 기준 들여쓰기 수직 정렬
+st.markdown(f"""<div class="main-title">🦁 민석이의<br><span class="indented-line">나스닥100 투자</span></div>""", unsafe_allow_html=True)
 
 # [상단 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
@@ -156,7 +130,7 @@ else: g_t, g_d, g_c = "💤 적립 유지", "평범한 우상향 구간입니다
 
 st.markdown(f"""<div class="combined-score-container"><div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div><div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div></div>""", unsafe_allow_html=True)
 
-# [근거 그리드] (2단 구성)
+# [근거 그리드]
 st.markdown(f"""<div class="basis-container"><div class="basis-item"><div class="basis-label">심리(RSI)</div><div class="basis-value">{last_row['RSI']:.1f}</div></div><div class="basis-item"><div class="basis-label">자금(MFI)</div><div class="basis-value">{last_row['MFI']:.1f}</div></div><div class="basis-item"><div class="basis-label">밴드위치</div><div class="basis-value">{last_row['PctB']:.1f}%</div></div></div>""", unsafe_allow_html=True)
 
 # 5. 달력 & 차트 레이아웃
@@ -171,11 +145,11 @@ col_left, col_right = st.columns([1, 1.6], gap="medium")
 
 with col_left:
     st.subheader("🗓️ 점수 캘린더")
-    # [수정] ★ cal-nav-area 클래스로 감싸서 폰에서도 무조건 양끝 배치 ★
+    # [수정] ★ cal-nav-area 클래스로 감싸서 폰에서만 한 줄 유지 ★
     st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     c_nav1, c_nav2, c_nav3 = st.columns([1, 4, 1])
     with c_nav1: st.button("◀", key="prev_cal", on_click=move_cal, args=(-1,))
-    with c_nav2: st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; line-height:40px;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
+    with c_nav2: st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; line-height:38px;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
     with c_nav3: st.button("▶", key="next_cal", on_click=move_cal, args=(1,))
     st.markdown('</div>', unsafe_allow_html=True)
 
