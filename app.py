@@ -9,7 +9,7 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 초강력 레이아웃 강제 CSS (S24 정밀 타격)
+# 2. 스트림릿의 모바일 강제 쌓기(Stacking)를 원천 차단하는 초강력 CSS
 st.markdown("""
 <style>
     /* 전체 배경 */
@@ -17,11 +17,11 @@ st.markdown("""
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목: 🦁 민석이의 '민'자와 아래 '나'자 수직 라인 정렬 */
+    /* [제목] 호랑이 기준 정밀 들여쓰기 */
     .main-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 25px; text-align: left; }
     .indented-line { padding-left: 36px; display: block; }
 
-    /* [2] 점수 산출 근거: 상하단 2단 그리드 */
+    /* [산출 근거] 2단 그리드 */
     .basis-container {
         display: grid; grid-template-columns: repeat(3, 1fr);
         background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
@@ -31,40 +31,36 @@ st.markdown("""
     .basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [3] ★ 캘린더 버튼 완전 정복: 스트림릿 레이아웃 무시 기술 ★ */
-    /* 폰에서 무조건 세로로 쌓는 스트림릿의 기본 미디어 쿼리를 박살냅니다. */
-    .nav-fix-container [data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important; /* 줄바꿈 원천 봉쇄 */
+    /* [★ 달력 버튼: 스트림릿의 레이아웃 엔진을 무시하고 가로 그리드로 강제 고정 ★] */
+    .nav-fix-area div[data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: 1fr 4fr 1fr !important; /* 가로 3분할 강제 */
+        gap: 0px !important;
         align-items: center !important;
-        justify-content: space-between !important;
-        width: 100% !important;
     }
     
-    .nav-fix-container [data-testid="column"] {
-        min-width: 0px !important;
-        width: auto !important;
-        flex: 1 1 auto !important;
+    .nav-fix-area div[data-testid="column"] {
+        width: 100% !important;
+        min-width: 0px !important; /* 폰에서 100%로 늘어나는 속성 파괴 */
+        flex: none !important;
     }
 
-    /* 버튼 크기 및 폰트 복구 (너무 작아지지 않게) */
     .stButton > button {
         background-color: #1E1E1E !important;
         color: #00FFD1 !important;
         border: 1px solid #00FFD1 !important;
         border-radius: 8px !important;
         font-weight: bold !important;
-        width: 50px !important; /* 버튼 폭 고정 */
-        height: 40px !important;
-        padding: 0 !important;
-        font-size: 18px !important;
+        width: 50px !important; /* 버튼 폭 복구 */
+        height: 42px !important;
+        margin: 0 auto !important;
+        display: block !important;
     }
 
-    /* [4] 달력 본체 크기 및 PC 중앙 정렬 */
+    /* 달력 본체 폭과 네비게이션 폭 일치 */
     .cal-wrapper { max-width: 380px; margin: 0 auto; }
 
-    /* [5] 차트 기간 버튼: PC 한줄 정렬 */
+    /* 차트 기간 버튼: PC 한줄 / 모바일 그리드 */
     div.stRadio > div[role="radiogroup"] {
         display: flex !important; flex-direction: row !important;
         flex-wrap: nowrap !important; gap: 5px !important;
@@ -80,7 +76,6 @@ st.markdown("""
         .combined-score-container { flex-direction: column !important; }
         .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
         .score-part span:last-child { font-size: 60px !important; }
-        /* 폰에서 차트 버튼 3열 그리드 */
         div.stRadio > div[role="radiogroup"] {
             display: grid !important; grid-template-columns: repeat(3, 1fr) !important;
             flex-wrap: wrap !important;
@@ -93,12 +88,12 @@ st.markdown("""
     .score-part { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #1E1E1E; padding: 20px; }
     .guide-part { flex: 2; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
     .strategy-table { width: 100%; border-collapse: collapse; background-color: #161618; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
-    .strategy-table th { background-color: #262730; color: #888; padding: 8px; font-size: 12px; }
+    .strategy-table th { background-color: #262730; color: #888; padding: 10px; font-size: 12px; }
     .strategy-table td { padding: 12px 5px; text-align: center; color: #E0E0E0; font-size: 13px; border-bottom: 1px solid #333; }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터 처리
+# 3. 데이터 처리 로직
 @st.cache_data
 def get_market_data(ticker="QQQ"):
     df = yf.Ticker(ticker).history(period="5y")
@@ -128,7 +123,7 @@ curr_score = int(last_row['Score'])
 # [제목] 들여쓰기 픽셀 매칭
 st.markdown(f'<div class="main-title">🦁 민석이의<br><span class="indented-line">나스닥100 투자</span></div>', unsafe_allow_html=True)
 
-# [상단 박스]
+# [상단 점수 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
@@ -152,12 +147,12 @@ col_left, col_right = st.columns([1, 1.6], gap="medium")
 
 with col_left:
     st.subheader("🗓️ 점수 캘린더")
-    # [수정] ★ nav-fix-container를 통해 폰에서도 강제로 한 줄 유지 ★
-    st.markdown('<div class="nav-fix-container">', unsafe_allow_html=True)
+    # [★ 핵심 해결 영역 ★] 
+    st.markdown('<div class="nav-fix-area">', unsafe_allow_html=True)
     c_nav1, c_nav2, c_nav3 = st.columns([1, 4, 1])
-    with c_nav1: st.button("◀", key="p_c", on_click=move_cal, args=(-1,))
+    with c_nav1: st.button("◀", key="p_btn", on_click=move_cal, args=(-1,))
     with c_nav2: st.markdown(f"<div style='text-align:center; font-weight:bold; font-size:18px; line-height:42px;'>{st.session_state.cal_year}년 {st.session_state.cal_month}월</div>", unsafe_allow_html=True)
-    with c_nav3: st.button("▶", key="n_c", on_click=move_cal, args=(1,))
+    with c_nav3: st.button("▶", key="n_btn", on_click=move_cal, args=(1,))
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="cal-wrapper">', unsafe_allow_html=True)
