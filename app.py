@@ -9,23 +9,22 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 강력한 모바일 전용 디자인 CSS
+# 2. 강력 디자인 및 정렬 CSS
 st.markdown("""
 <style>
-    /* [기본 배경] */
+    /* 배경 및 기본 텍스트 */
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; color: #FFFFFF !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [제목] 🦁 아이콘 기준 수직 라인 정렬 */
+    /* [1] 제목: 🦁 민석이의 수직 라인 정밀 정렬 */
     .ms-title-top { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
     .ms-title-bottom { padding-left: 38px; font-size: 26px; font-weight: 800; margin-top: -10px; display: block; margin-bottom: 25px;}
 
-    /* [★ 공통 라디오 버튼: 형광초록 테두리 & 선택 시 빨강 ★] */
+    /* [2] ★ 버튼 공통 스타일: 형광초록 테두리 & 선택 시 빨강 ★ */
     div[data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important; /* 폰에서 줄바꿈 절대 방지 */
         justify-content: center !important; /* 중앙 정렬 */
         gap: 10px !important;
         width: 100% !important;
@@ -34,10 +33,10 @@ st.markdown("""
     /* 라디오 동그라미 숨기기 */
     div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child { display: none !important; }
 
-    /* 모든 버튼 기본 스타일 (형광 초록 테두리) */
+    /* 버튼 기본 (형광 초록 테두리) */
     div[data-testid="stRadio"] div[role="radiogroup"] > label {
         background-color: #1E1E1E !important;
-        border: 1px solid #00FFD1 !important; /* 형광 초록 테두리 */
+        border: 1px solid #00FFD1 !important; 
         border-radius: 8px !important;
         padding: 8px 12px !important;
         font-size: 14px !important;
@@ -48,37 +47,38 @@ st.markdown("""
         text-align: center;
     }
 
-    /* 선택 시 스타일 (빨간색 테두리 및 글씨) */
+    /* 선택 시 (빨간색 테두리) */
     div[data-testid="stRadio"] div[role="radiogroup"] > label[data-baseweb="radio"] {
         border-color: #EF5350 !important;
         color: #EF5350 !important;
         background-color: rgba(239, 83, 80, 0.1) !important;
     }
 
-    /* [3] ★ 캘린더 네비게이션 전용: 여유로운 간격 ★ */
-    .cal-nav-area div[data-testid="stRadio"] div[role="radiogroup"] {
-        gap: 30px !important; /* ◀   날짜   ▶ 간 여유 */
+    /* [3] 달력 네비게이션 전용: 여유로운 중앙 배치 */
+    .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] {
+        gap: 25px !important;
+        flex-wrap: nowrap !important; /* 폰에서 한 줄 유지 */
     }
-    .cal-nav-area div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2) {
+    .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] > label:nth-child(2) {
         min-width: 160px !important; /* 날짜 영역 확보 */
     }
 
-    /* [4] ★ 흐름 분석: 폰에서 버튼이 너무 작아지면 자동으로 2줄 허용 ★ */
+    /* [4] 흐름 분석 버튼: 폰에서 자동 줄바꿈 허용 */
     @media (max-width: 768px) {
         .chart-period-box div[data-testid="stRadio"] > div[role="radiogroup"] {
-            flex-wrap: wrap !important; /* 폰에서 기간 버튼은 자연스럽게 줄바꿈 */
+            flex-wrap: wrap !important;
             justify-content: flex-start !important;
         }
-        .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
         .combined-score-container { flex-direction: column !important; }
+        .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
     }
 
-    /* 달력 본체 폭 고정 */
+    /* 달력 표 고정 */
     .cal-wrapper { max-width: 380px; margin: 0 auto; }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터 처리
+# 3. 데이터 로직
 @st.cache_data
 def get_market_data(ticker="QQQ"):
     df = yf.Ticker(ticker).history(period="5y")
@@ -100,7 +100,7 @@ last_row = df.iloc[-1]; curr_score = int(last_row['Score'])
 # 4. 화면 구성
 st.markdown(f'<div class="ms-title-top">🦁 민석이의</div><div class="ms-title-bottom">나스닥100 투자</div>', unsafe_allow_html=True)
 
-# [상단 스코어 박스]
+# [상단 통합 스코어 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
@@ -128,7 +128,6 @@ col_l, col_r = st.columns([1, 1.5], gap="large")
 
 with col_l:
     st.subheader("🗓️ 점수 캘린더")
-    # [달력 버튼 전용 영역]
     st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     curr_lab = f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"
     nav_sel = st.radio("cal_nav", [" ◀ ", curr_lab, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
@@ -163,7 +162,6 @@ with col_l:
 with col_r:
     st.subheader("📈 흐름 분석")
     st.markdown('<div class="chart-period-box">', unsafe_allow_html=True)
-    # [흐름 분석 버튼] 1년 추가, 3년 제거
     period = st.radio("P", ["1개월", "3개월", "6개월", "1년", "5년"], horizontal=True, label_visibility="collapsed")
     st.markdown('</div>', unsafe_allow_html=True)
     
@@ -176,7 +174,7 @@ with col_r:
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(l=0,r=0,t=10,b=0), height=350, showlegend=False, xaxis=dict(gridcolor='#333', tickformat='%y-%m'), yaxis=dict(gridcolor='#333'), yaxis2=dict(range=[0, 100], showgrid=False), hovermode="x unified", dragmode=False)
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-# 하단 테이블 생략 (제공해주신 코드와 동일)
+# 하단 가이드
 st.divider()
 st.subheader("📋 실전 운용 전략 가이드")
 st.markdown("""<table style="width:100%; border-collapse: collapse; background-color: #161618; border-radius: 10px; overflow: hidden; border: 1px solid #333;"><thead><tr><th style="background-color: #262730; color: #888; padding: 12px; border-bottom: 1px solid #333;">구간</th><th style="background-color: #262730; color: #888; padding: 12px; border-bottom: 1px solid #333;">상태</th><th style="background-color: #262730; color: #888; padding: 12px; border-bottom: 1px solid #333;">Action Plan</th></tr></thead><tbody><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #4CAF50; font-weight: bold;">0~20</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🚨공황</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">인생역전: <span style="color: #EF5350; font-weight: bold;">TQQQ 50% 매수</span></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #81C784; font-weight: bold;">21~30</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🛒침체</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">저가매수: <span style="color: #EF5350; font-weight: bold;">TQQQ 30% 매수</span></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #A5D6A7; font-weight: bold;">31~40</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🌱조정</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">가벼운매수: <span style="color: #EF5350; font-weight: bold;">TQQQ 10% 매수</span></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #00FFD1; font-weight: bold;">41~84</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">💤중립</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;"><b>QLD 적립 유지</b></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #EF5350; font-weight: bold;">85~100</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🔥과열</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">수익실현: <span style="color: #EF5350; font-weight: bold;">20% 매도</span></td></tr></tbody></table>""", unsafe_allow_html=True)
