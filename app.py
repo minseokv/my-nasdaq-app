@@ -9,7 +9,7 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 강력한 디자인 및 정렬 강제 CSS
+# 2. 강력한 디자인 및 중앙 정렬 강제 CSS
 st.markdown("""
 <style>
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; color: #FFFFFF !important; }
@@ -31,33 +31,37 @@ st.markdown("""
     .basis-lab { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-val { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [3] ★ 캘린더 네비게이션: 중앙 정렬 + 여유로운 간격 ★ */
+    /* [3] ★ 캘린더 네비게이션: 정중앙 정렬 + 여유로운 간격 ★ */
     .cal-nav-wrap div[data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        justify-content: center !important; /* 중앙 정렬 */
-        gap: 40px !important; /* 화살표와 날짜 사이의 엄청난 여유 */
+        justify-content: center !important; /* 전체 가로 중앙 정렬 */
+        align-items: center !important;
+        gap: 10px !important; 
         width: 100% !important;
     }
     
-    /* 동그라미 숨기기 */
+    /* 라디오 동그라미 숨기기 */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label > div:first-child { display: none !important; }
 
+    /* 버튼 스타일 */
     .cal-nav-wrap div[data-testid="stRadio"] > div[role="radiogroup"] > label {
         background-color: transparent !important;
         border: none !important;
         padding: 0 !important;
-        font-size: 19px !important;
+        font-size: 20px !important;
         font-weight: bold !important;
         color: #00FFD1 !important;
+        flex: none !important; /* 자동 너비 조절 끔 */
     }
 
-    /* 날짜 표시(가운데)만 흰색으로 강조 */
+    /* 가운데 날짜 텍스트: 강제로 중앙 배치 및 너비 확보 */
     .cal-nav-wrap div[data-testid="stRadio"] > div[role="radiogroup"] > label:nth-child(2) {
         color: #FFFFFF !important;
-        min-width: 150px !important;
-        text-align: center;
+        min-width: 180px !important; /* 날짜 폭을 넓게 잡아서 중앙 유지 */
+        text-align: center !important;
+        font-size: 18px !important;
     }
 
     /* [4] ★ 흐름 분석: 선택 시 빨간색 강조 스타일 복구 ★ */
@@ -76,7 +80,7 @@ st.markdown("""
         font-size: 13px !important;
         color: #AAA !important;
     }
-    /* 선택된 버튼 빨간색 강조 로직 */
+    /* 선택된 버튼 빨간색 강조 */
     .period-box div[data-testid="stRadio"] > div[role="radiogroup"] > label:has(input:checked) {
         border-color: #EF5350 !important;
         color: #EF5350 !important;
@@ -125,7 +129,7 @@ curr_score = int(last_row['Score'])
 # 4. 화면 구성 시작
 st.markdown(f'<div class="ms-title-area"><div class="ms-title-top">🦁 민석이의</div><div class="ms-title-bottom">나스닥100 투자</div></div>', unsafe_allow_html=True)
 
-# [점수 박스]
+# [점수 통합 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
@@ -146,10 +150,10 @@ col_l, col_r = st.columns([1, 1.6], gap="medium")
 with col_l:
     st.subheader("🗓️ 점수 캘린더")
     
-    # [★ 캘린더 네비게이션: 중앙 정렬 & 여유로운 간격 ★]
+    # [★ 캘린더 네비게이션: 완벽 중앙 정렬 ★]
     st.markdown('<div class="cal-nav-wrap">', unsafe_allow_html=True)
     current_nav_label = f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"
-    nav_sel = st.radio("cal_nav_widget", [" ◀ ", current_nav_label, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
+    nav_sel = st.radio("cal_nav_final", [" ◀ ", current_nav_label, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
     
     if nav_sel == " ◀ ":
         st.session_state.cal_month -= 1
@@ -181,7 +185,6 @@ with col_l:
 
 with col_r:
     st.subheader("📈 흐름 분석")
-    # [흐름 분석 버튼] 선택 시 빨간색 표시 복구
     st.markdown('<div class="period-box">', unsafe_allow_html=True)
     period = st.radio("P", ["1개월", "3개월", "6개월", "3년", "5년"], horizontal=True, label_visibility="collapsed")
     st.markdown('</div>', unsafe_allow_html=True)
