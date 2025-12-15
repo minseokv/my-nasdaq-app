@@ -9,37 +9,36 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 강력한 디자인 및 중앙 정렬 강제 CSS (PC/S24 통합)
+# 2. 강력한 디자인 및 정중앙 정렬 강제 CSS
 st.markdown("""
 <style>
-    /* [기본 배경 및 텍스트] */
+    /* [전체 배경 및 폰트] */
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; color: #FFFFFF !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [제목] 수직 라인 정밀 정렬 */
-    .ms-title-main { margin-bottom: 25px; text-align: left; }
+    /* [제목] 🦁 아이콘 기준 정밀 수직 정렬 */
+    .ms-title-box { margin-bottom: 25px; text-align: left; }
     .ms-title-top { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
     .ms-title-sub { padding-left: 38px; font-size: 26px; font-weight: 800; margin-top: -5px; display: block; }
 
-    /* [★ 캘린더/흐름분석 공통: 버튼 테두리 및 정렬 ★] */
+    /* [★ 공통 라디오 버튼: 형광초록 테두리 & 선택 시 빨강 ★] */
     div[data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        justify-content: center !important; /* 가로 중앙 정렬 핵심 */
-        gap: 10px !important;
+        justify-content: center !important; /* ★ 정중앙 정렬 명령 ★ */
+        gap: 12px !important;
         width: 100% !important;
     }
     
-    /* 라디오 버튼 동그라미 숨기기 */
-    div[data-testid="stRadio"] [data-testid="stWidgetLabel"] { display: none !important; }
+    /* 동그라미 제거 */
     div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child { display: none !important; }
 
-    /* 모든 버튼 기본 스타일 (테두리 포함) */
+    /* 버튼 기본 스타일 (형광 초록 테두리) */
     div[data-testid="stRadio"] div[role="radiogroup"] > label {
         background-color: #1E1E1E !important;
-        border: 1px solid #444 !important; /* 기본 테두리 */
+        border: 1px solid #00FFD1 !important; /* 기본 형광 초록 테두리 */
         border-radius: 8px !important;
         padding: 8px 16px !important;
         font-size: 14px !important;
@@ -49,40 +48,47 @@ st.markdown("""
         transition: all 0.2s ease;
     }
 
-    /* 선택된 버튼 빨간색 강조 (테두리 + 글씨) */
+    /* 선택 시 스타일 (빨간색 테두리 및 글씨) */
     div[data-testid="stRadio"] div[role="radiogroup"] > label[data-baseweb="radio"] {
-        border-color: #EF5350 !important; /* 빨간색 테두리 */
+        border-color: #EF5350 !important; /* 선택 시 빨간색 테두리 */
         color: #EF5350 !important;
         background-color: rgba(239, 83, 80, 0.1) !important;
     }
 
-    /* [달력 네비게이션 전용 디자인] */
+    /* [달력 네비게이션 전용: 테두리 없이 중앙 배치] */
     .cal-nav-area div[data-testid="stRadio"] div[role="radiogroup"] > label {
         background-color: transparent !important;
         border: none !important;
-        font-size: 19px !important;
+        font-size: 20px !important;
         color: #00FFD1 !important;
-        padding: 5px 15px !important;
+        min-width: 0 !important;
     }
+    /* 가운데 년월 글자만 흰색 */
     .cal-nav-area div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2) {
         color: #FFFFFF !important;
-        min-width: 160px !important;
+        min-width: 180px !important;
+        text-align: center;
     }
 
-    /* 달력 본체 및 PC 폭 제한 */
-    .ms-calendar-container { max-width: 380px; margin: 0 auto; }
+    /* [달력 표 설정] */
+    .ms-calendar-grid { max-width: 380px; margin: 0 auto; }
 
-    /* 점수 근거 그리드 */
-    .ms-basis-container {
+    /* 점수 산출 근거 박스 */
+    .ms-basis-grid {
         display: grid; grid-template-columns: repeat(3, 1fr);
         background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
     }
-    .ms-basis-item { padding: 10px 0; text-align: center; border-right: 1px solid #222; }
-    .ms-basis-item:last-child { border-right: none; }
+    .ms-basis-node { padding: 10px 0; text-align: center; border-right: 1px solid #222; }
+    .ms-basis-node:last-child { border-right: none; }
+
+    @media (max-width: 768px) {
+        .combined-score-container { flex-direction: column !important; }
+        .ms-calendar-grid { max-width: 100% !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터 처리
+# 3. 데이터 처리 로직
 @st.cache_data
 def get_market_data(ticker="QQQ"):
     df = yf.Ticker(ticker).history(period="5y")
@@ -103,7 +109,7 @@ last_row = df.iloc[-1]
 curr_score = int(last_row['Score'])
 
 # 4. 화면 구성 시작
-st.markdown(f'<div class="ms-title-main"><div class="ms-title-top">🦁 민석이의</div><div class="ms-title-sub">나스닥100 투자</div></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="ms-title-box"><div class="ms-title-top">🦁 민석이의</div><div class="ms-title-sub">나스닥100 투자</div></div>', unsafe_allow_html=True)
 
 # [상단 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
@@ -115,9 +121,9 @@ else: g_t, g_d, g_c = "💤 적립 유지", "평범한 우상향 구간입니다
 st.markdown(f"""<div class="combined-score-container"><div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div><div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div></div>""", unsafe_allow_html=True)
 
 # [근거 그리드]
-st.markdown(f"""<div class="ms-basis-container"><div class="ms-basis-item"><div style="color:#888;font-size:11px;">심리(RSI)</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['RSI']:.1f}</div></div><div class="ms-basis-item"><div style="color:#888;font-size:11px;">자금(MFI)</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['MFI']:.1f}</div></div><div class="ms-basis-item"><div style="color:#888;font-size:11px;">밴드위치</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['PctB']:.1f}%</div></div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class="ms-basis-grid"><div class="ms-basis-node"><div style="color:#888;font-size:11px;">심리(RSI)</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['RSI']:.1f}</div></div><div class="ms-basis-node"><div style="color:#888;font-size:11px;">자금(MFI)</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['MFI']:.1f}</div></div><div class="ms-basis-node"><div style="color:#888;font-size:11px;">밴드위치</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['PctB']:.1f}%</div></div></div>""", unsafe_allow_html=True)
 
-# 5. 달력 & 차트 섹션
+# 5. 달력 & 차트 레이아웃
 if 'cal_year' not in st.session_state: st.session_state.cal_year = datetime.now().year
 if 'cal_month' not in st.session_state: st.session_state.cal_month = datetime.now().month
 
@@ -125,9 +131,10 @@ col_l, col_r = st.columns([1, 1.6], gap="medium")
 
 with col_l:
     st.subheader("🗓️ 점수 캘린더")
+    # [달력 버튼: 중앙 정렬 강제]
     st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     curr_lab = f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"
-    nav_sel = st.radio("cal_nav_pc", [" ◀ ", curr_lab, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
+    nav_sel = st.radio("cal_nav_center", [" ◀ ", curr_lab, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
     if nav_sel == " ◀ ":
         st.session_state.cal_month -= 1
         if st.session_state.cal_month < 1: st.session_state.cal_month = 12; st.session_state.cal_year -= 1
@@ -138,7 +145,7 @@ with col_l:
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="ms-calendar-container">', unsafe_allow_html=True)
+    st.markdown('<div class="ms-calendar-grid">', unsafe_allow_html=True)
     calendar.setfirstweekday(calendar.SUNDAY)
     cal = calendar.monthcalendar(st.session_state.cal_year, st.session_state.cal_month)
     h = f'<div style="background-color:#161618; border-radius:15px; padding:12px; border:1px solid #333;"><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:10px;"><div style="color:#FF5252;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#5C9DFF;">토</div></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:5px;">'
@@ -158,10 +165,7 @@ with col_l:
 
 with col_r:
     st.subheader("📈 흐름 분석")
-    st.markdown('<div class="ms-period-container">', unsafe_allow_html=True)
     period = st.radio("P", ["1개월", "3개월", "6개월", "1년", "5년"], horizontal=True, label_visibility="collapsed")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
     cdf = df.tail({"1개월":22, "3개월":63, "6개월":126, "1년":252, "5년":1260}[period])
     b_d, s_d = len(cdf[cdf['Score'] <= 40]), len(cdf[cdf['Score'] >= 85])
     st.markdown(f'<div style="font-size:12px; color:#AAA; text-align:right; margin-bottom:5px;">💰 40↓: <b style="color:#4CAF50;">{b_d}회</b> | 🔥 85↑: <b style="color:#EF5350;">{s_d}회</b></div>', unsafe_allow_html=True)
