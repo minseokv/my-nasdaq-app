@@ -9,99 +9,76 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. PC 및 웹 환경 전용 고정 CSS
+# 2. 강력한 디자인 및 중앙 정렬 강제 CSS (PC/S24 통합)
 st.markdown("""
 <style>
-    /* 배경 설정 */
+    /* [기본 배경 및 텍스트] */
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; color: #FFFFFF !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목: 🦁 민석이의 아래 나스닥100 투자 정밀 정렬 */
-    .pc-title-box { margin-bottom: 25px; text-align: left; }
-    .pc-title-top { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .pc-title-sub { padding-left: 38px; font-size: 26px; font-weight: 800; margin-top: -5px; display: block; }
+    /* [제목] 수직 라인 정밀 정렬 */
+    .ms-title-main { margin-bottom: 25px; text-align: left; }
+    .ms-title-top { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    .ms-title-sub { padding-left: 38px; font-size: 26px; font-weight: 800; margin-top: -5px; display: block; }
 
-    /* [2] 점수 산출 근거 박스 */
-    .pc-basis-container {
-        display: grid; grid-template-columns: repeat(3, 1fr);
-        background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
-    }
-    .pc-basis-item { padding: 10px 0; text-align: center; border-right: 1px solid #222; }
-    .pc-basis-item:last-child { border-right: none; }
-    .pc-basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
-    .pc-basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
-
-    /* [3] ★ 달력 네비게이션: PC 화면 중앙 상단 고정 ★ */
-    .pc-cal-nav div[data-testid="stRadio"] > div[role="radiogroup"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: center !important; /* 가로 중앙 정렬 */
-        align-items: center !important;
-        gap: 20px !important;
-        width: 100% !important;
-        margin: 0 auto 15px auto !important;
-    }
-    
-    /* 동그라미 숨기기 */
-    div[data-testid="stRadio"] > div[role="radiogroup"] > label > div:first-child { display: none !important; }
-
-    .pc-cal-nav div[data-testid="stRadio"] > div[role="radiogroup"] > label {
-        background-color: transparent !important;
-        border: none !important;
-        padding: 5px 10px !important;
-        font-size: 19px !important;
-        font-weight: bold !important;
-        color: #00FFD1 !important;
-        cursor: pointer;
-    }
-
-    /* 날짜 표시 영역 강조 및 폭 확보 */
-    .pc-cal-nav div[data-testid="stRadio"] > div[role="radiogroup"] > label:nth-child(2) {
-        color: #FFFFFF !important;
-        min-width: 160px !important;
-        text-align: center !important;
-    }
-
-    /* [4] ★ 흐름 분석: 테두리 버튼 + 빨간색 강조 복구 ★ */
-    .pc-period-nav div[data-testid="stRadio"] > div[role="radiogroup"] {
+    /* [★ 캘린더/흐름분석 공통: 버튼 테두리 및 정렬 ★] */
+    div[data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
+        justify-content: center !important; /* 가로 중앙 정렬 핵심 */
         gap: 10px !important;
+        width: 100% !important;
     }
-    .pc-period-nav div[data-testid="stRadio"] > div[role="radiogroup"] > label {
-        flex: none !important;
+    
+    /* 라디오 버튼 동그라미 숨기기 */
+    div[data-testid="stRadio"] [data-testid="stWidgetLabel"] { display: none !important; }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child { display: none !important; }
+
+    /* 모든 버튼 기본 스타일 (테두리 포함) */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label {
         background-color: #1E1E1E !important;
-        border: 1px solid #444 !important; /* 테두리 복구 */
+        border: 1px solid #444 !important; /* 기본 테두리 */
         border-radius: 8px !important;
         padding: 8px 16px !important;
         font-size: 14px !important;
+        font-weight: bold !important;
         color: #AAA !important;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
-    /* 선택된 버튼 빨간색 강조 (PC에서도 작동하게 has 셀렉터 사용) */
-    .pc-period-nav div[data-testid="stRadio"] > div[role="radiogroup"] > label:has(input:checked) {
-        border-color: #EF5350 !important;
+
+    /* 선택된 버튼 빨간색 강조 (테두리 + 글씨) */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label[data-baseweb="radio"] {
+        border-color: #EF5350 !important; /* 빨간색 테두리 */
         color: #EF5350 !important;
         background-color: rgba(239, 83, 80, 0.1) !important;
     }
 
-    /* 달력 본체 폭 고정 (PC 모니터 기준) */
-    .pc-calendar-area { max-width: 420px; margin: 0 auto; }
-
-    @media (max-width: 768px) {
-        .combined-score-container { flex-direction: column !important; }
-        .pc-calendar-area { max-width: 100% !important; }
+    /* [달력 네비게이션 전용 디자인] */
+    .cal-nav-area div[data-testid="stRadio"] div[role="radiogroup"] > label {
+        background-color: transparent !important;
+        border: none !important;
+        font-size: 19px !important;
+        color: #00FFD1 !important;
+        padding: 5px 15px !important;
+    }
+    .cal-nav-area div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2) {
+        color: #FFFFFF !important;
+        min-width: 160px !important;
     }
 
-    .point-red { color: #EF5350 !important; font-weight: bold !important; }
-    .combined-score-container { display: flex; background-color: #161618; border: 2px solid #333; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
-    .score-part { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #1E1E1E; padding: 20px; }
-    .guide-part { flex: 2; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
-    .strategy-table { width: 100%; border-collapse: collapse; background-color: #161618; border-radius: 10px; border: 1px solid #333; }
-    .strategy-table th { background-color: #262730; color: #888; padding: 10px; font-size: 12px; }
-    .strategy-table td { padding: 12px 5px; text-align: center; color: #E0E0E0; font-size: 13px; border-bottom: 1px solid #333; }
+    /* 달력 본체 및 PC 폭 제한 */
+    .ms-calendar-container { max-width: 380px; margin: 0 auto; }
+
+    /* 점수 근거 그리드 */
+    .ms-basis-container {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        background-color: #161618; border: 1px solid #333; border-radius: 12px; margin-bottom: 20px;
+    }
+    .ms-basis-item { padding: 10px 0; text-align: center; border-right: 1px solid #222; }
+    .ms-basis-item:last-child { border-right: none; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -126,9 +103,9 @@ last_row = df.iloc[-1]
 curr_score = int(last_row['Score'])
 
 # 4. 화면 구성 시작
-st.markdown(f'<div class="pc-title-box"><div class="pc-title-top">🦁 민석이의</div><div class="pc-title-sub">나스닥100 투자</div></div>', unsafe_allow_html=True)
+st.markdown(f'<div class="ms-title-main"><div class="ms-title-top">🦁 민석이의</div><div class="ms-title-sub">나스닥100 투자</div></div>', unsafe_allow_html=True)
 
-# [점수 박스]
+# [상단 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
@@ -138,9 +115,9 @@ else: g_t, g_d, g_c = "💤 적립 유지", "평범한 우상향 구간입니다
 st.markdown(f"""<div class="combined-score-container"><div class="score-part"><span style="color:#888; font-size:13px;">현재 AI 점수</span><span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span></div><div class="guide-part"><h3 style="margin:0; color:{g_c} !important;">{g_t}</h3><p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p></div></div>""", unsafe_allow_html=True)
 
 # [근거 그리드]
-st.markdown(f"""<div class="pc-basis-container"><div class="pc-basis-item"><div class="pc-basis-label">심리(RSI)</div><div class="pc-basis-value">{last_row['RSI']:.1f}</div></div><div class="pc-basis-item"><div class="pc-basis-label">자금(MFI)</div><div class="pc-basis-value">{last_row['MFI']:.1f}</div></div><div class="pc-basis-item"><div class="pc-basis-label">밴드위치</div><div class="pc-basis-value">{last_row['PctB']:.1f}%</div></div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class="ms-basis-container"><div class="ms-basis-item"><div style="color:#888;font-size:11px;">심리(RSI)</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['RSI']:.1f}</div></div><div class="ms-basis-item"><div style="color:#888;font-size:11px;">자금(MFI)</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['MFI']:.1f}</div></div><div class="ms-basis-item"><div style="color:#888;font-size:11px;">밴드위치</div><div style="font-size:16px;font-weight:bold;color:#00FFD1;">{last_row['PctB']:.1f}%</div></div></div>""", unsafe_allow_html=True)
 
-# 5. 달력 & 차트 레이아웃
+# 5. 달력 & 차트 섹션
 if 'cal_year' not in st.session_state: st.session_state.cal_year = datetime.now().year
 if 'cal_month' not in st.session_state: st.session_state.cal_month = datetime.now().month
 
@@ -148,12 +125,9 @@ col_l, col_r = st.columns([1, 1.6], gap="medium")
 
 with col_l:
     st.subheader("🗓️ 점수 캘린더")
-    
-    # [달력 네비게이션] 중앙 상단 배치
-    st.markdown('<div class="pc-cal-nav">', unsafe_allow_html=True)
+    st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     curr_lab = f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"
-    nav_sel = st.radio("cal_pc_nav", [" ◀ ", curr_lab, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
-    
+    nav_sel = st.radio("cal_nav_pc", [" ◀ ", curr_lab, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
     if nav_sel == " ◀ ":
         st.session_state.cal_month -= 1
         if st.session_state.cal_month < 1: st.session_state.cal_month = 12; st.session_state.cal_year -= 1
@@ -164,10 +138,10 @@ with col_l:
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="pc-calendar-area">', unsafe_allow_html=True)
+    st.markdown('<div class="ms-calendar-container">', unsafe_allow_html=True)
     calendar.setfirstweekday(calendar.SUNDAY)
     cal = calendar.monthcalendar(st.session_state.cal_year, st.session_state.cal_month)
-    h = f'<div style="background-color:#161618; border-radius:15px; padding:15px; border:1px solid #333;"><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:10px;"><div style="color:#FF5252;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#5C9DFF;">토</div></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:5px;">'
+    h = f'<div style="background-color:#161618; border-radius:15px; padding:12px; border:1px solid #333;"><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:10px;"><div style="color:#FF5252;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#5C9DFF;">토</div></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:5px;">'
     for week in cal:
         for day in week:
             if day == 0: h += '<div></div>'; continue
@@ -184,8 +158,7 @@ with col_l:
 
 with col_r:
     st.subheader("📈 흐름 분석")
-    # [흐름 분석 버튼] 3년 빼고 1년 추가 및 테두리 복구
-    st.markdown('<div class="pc-period-nav">', unsafe_allow_html=True)
+    st.markdown('<div class="ms-period-container">', unsafe_allow_html=True)
     period = st.radio("P", ["1개월", "3개월", "6개월", "1년", "5년"], horizontal=True, label_visibility="collapsed")
     st.markdown('</div>', unsafe_allow_html=True)
     
