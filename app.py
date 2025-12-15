@@ -9,76 +9,65 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 강력 디자인 및 정렬 CSS
+# 2. 디자인 유지 및 위치 정렬 CSS
 st.markdown("""
 <style>
-    /* 배경 및 기본 텍스트 */
+    /* 전체 배경 및 기본 텍스트 */
     [data-testid="stAppViewContainer"] { background-color: #0E1117 !important; color: #FFFFFF !important; }
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목: 🦁 민석이의 수직 라인 정밀 정렬 */
+    /* [제목] 🦁 아이콘 기준 수직 라인 정렬 */
     .ms-title-top { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
     .ms-title-bottom { padding-left: 38px; font-size: 26px; font-weight: 800; margin-top: -10px; display: block; margin-bottom: 25px;}
 
-    /* [2] ★ 버튼 공통 스타일: 형광초록 테두리 & 선택 시 빨강 ★ */
-    div[data-testid="stRadio"] > div[role="radiogroup"] {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: center !important; /* 중앙 정렬 */
-        gap: 10px !important;
-        width: 100% !important;
+    /* [버튼 스타일] 민석님이 좋아하시던 원래 색상 유지 (회색 테두리 / 선택 시 형광초록) */
+    div.stRadio > div[role="radiogroup"] { gap: 8px; }
+    div.stRadio > div[role="radiogroup"] > label {
+        background-color: #1E1E1E !important; 
+        border: 1px solid #444 !important;
+        color: #AAA !important; 
+        border-radius: 4px !important; 
+        padding: 4px 12px !important; 
+        font-size: 12px !important;
     }
-    
+    /* 선택 시 형광 초록 유지 */
+    div.stRadio > div[role="radiogroup"] > label[data-baseweb="radio"] {
+        background-color: #262730 !important; 
+        border: 1px solid #00FFD1 !important; 
+        color: #00FFD1 !important;
+    }
     /* 라디오 동그라미 숨기기 */
     div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child { display: none !important; }
 
-    /* 버튼 기본 (형광 초록 테두리) */
-    div[data-testid="stRadio"] div[role="radiogroup"] > label {
-        background-color: #1E1E1E !important;
-        border: 1px solid #00FFD1 !important; 
-        border-radius: 8px !important;
-        padding: 8px 12px !important;
-        font-size: 14px !important;
-        font-weight: bold !important;
-        color: #AAA !important;
-        cursor: pointer;
-        min-width: 50px;
-        text-align: center;
+    /* [★ 달력 네비게이션: 중앙 정렬 ★] */
+    .cal-nav-area div[role="radiogroup"] {
+        justify-content: center !important; /* 중앙 배치 */
+        gap: 20px !important; /* 화살표와 날짜 사이 여유 */
     }
 
-    /* 선택 시 (빨간색 테두리) */
-    div[data-testid="stRadio"] div[role="radiogroup"] > label[data-baseweb="radio"] {
-        border-color: #EF5350 !important;
-        color: #EF5350 !important;
-        background-color: rgba(239, 83, 80, 0.1) !important;
-    }
+    /* 달력 본체 중앙 정렬용 */
+    .cal-wrapper { max-width: 450px; margin: 0 auto; }
 
-    /* [3] 달력 네비게이션 전용: 여유로운 중앙 배치 */
-    .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] {
-        gap: 25px !important;
-        flex-wrap: nowrap !important; /* 폰에서 한 줄 유지 */
-    }
-    .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] > label:nth-child(2) {
-        min-width: 160px !important; /* 날짜 영역 확보 */
-    }
+    /* 빨간색 강조용 */
+    .point-red { color: #EF5350 !important; font-weight: bold !important; }
 
-    /* [4] 흐름 분석 버튼: 폰에서 자동 줄바꿈 허용 */
+    /* 가이드 테이블 */
+    .strategy-table {
+        width: 100%; border-collapse: collapse; background-color: #161618;
+        border-radius: 10px; overflow: hidden; border: 1px solid #333;
+    }
+    .strategy-table th { background-color: #262730; color: #888; padding: 12px; text-align: center; border-bottom: 1px solid #333; }
+    .strategy-table td { padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0; }
+
     @media (max-width: 768px) {
-        .chart-period-box div[data-testid="stRadio"] > div[role="radiogroup"] {
-            flex-wrap: wrap !important;
-            justify-content: flex-start !important;
-        }
-        .combined-score-container { flex-direction: column !important; }
         .score-part { border-right: none !important; border-bottom: 1px solid #333 !important; }
+        .combined-score-container { flex-direction: column !important; }
     }
-
-    /* 달력 표 고정 */
-    .cal-wrapper { max-width: 380px; margin: 0 auto; }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 데이터 로직
+# 3. 데이터 처리
 @st.cache_data
 def get_market_data(ticker="QQQ"):
     df = yf.Ticker(ticker).history(period="5y")
@@ -111,23 +100,31 @@ st.markdown(f"""
 <div style="display: flex; background-color: #161618; border: 2px solid #333; border-radius: 15px; overflow: hidden; margin-bottom: 25px;" class="combined-score-container">
     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #1E1E1E; padding: 20px;" class="score-part">
         <span style="color:#888; font-size:13px;">현재 AI 점수</span>
-        <span style="color:#00FFD1; font-size:70px; font-weight:bold; line-height:1;">{curr_score}</span>
+        <span style="color:#00FFD1; font-size:75px; font-weight:bold; line-height:1;">{curr_score}</span>
     </div>
-    <div style="flex: 2; padding: 25px; display: flex; flex-direction: column; justify-content: center; text-align: left;">
+    <div style="flex: 2; padding: 25px; display: flex; flex-direction: column; justify-content: center;">
         <h3 style="margin:0; color:{g_c} !important;">{g_t}</h3>
         <p style="margin-top:8px; color:#BBB; font-size:15px; line-height:1.5;">{g_d}</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# 5. 달력 & 차트 레이아웃
-if 'cal_year' not in st.session_state: st.session_state.cal_year = datetime.now().year
-if 'cal_month' not in st.session_state: st.session_state.cal_month = datetime.now().month
+# 📊 점수 산출 근거 (Metric)
+st.subheader("📊 점수 산출 근거")
+cw1, cw2, cw3 = st.columns(3)
+cw1.metric("심리(RSI)", f"{last_row['RSI']:.1f}")
+cw2.metric("자금(MFI)", f"{last_row['MFI']:.1f}")
+cw3.metric("밴드위치", f"{last_row['PctB']:.1f}%")
 
-col_l, col_r = st.columns([1, 1.5], gap="large")
+# 🗓️ 달력 & 📈 차트 레이아웃
+col_cal, col_chart = st.columns([1, 1.5], gap="large")
 
-with col_l:
+with col_cal:
     st.subheader("🗓️ 점수 캘린더")
+    if 'cal_year' not in st.session_state: st.session_state.cal_year = datetime.now().year
+    if 'cal_month' not in st.session_state: st.session_state.cal_month = datetime.now().month
+
+    # [달력 네비게이션: 중앙 정렬]
     st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     curr_lab = f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"
     nav_sel = st.radio("cal_nav", [" ◀ ", curr_lab, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
@@ -141,10 +138,11 @@ with col_l:
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # 달력 표
     st.markdown('<div class="cal-wrapper">', unsafe_allow_html=True)
     calendar.setfirstweekday(calendar.SUNDAY)
     cal = calendar.monthcalendar(st.session_state.cal_year, st.session_state.cal_month)
-    h = f'<div style="background-color:#161618; border-radius:15px; padding:12px; border:1px solid #333;"><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center; font-size:10px;"><div style="color:#FF5252;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#5C9DFF;">토</div></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:5px;">'
+    h = f'<div style="background-color:#161618; border-radius:15px; padding:20px; border:1px solid #333;"><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px;"><div style="color:#FF5252;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#5C9DFF;">토</div></div><div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px;">'
     for week in cal:
         for day in week:
             if day == 0: h += '<div></div>'; continue
@@ -156,18 +154,16 @@ with col_l:
                     val = int(row['Score'].iloc[0]); chg = row['Change'].iloc[0]; stxt = str(val)
                     bg, sc = ("#1B3320", "#4CAF50") if chg >= 0 else ("#331B1B", "#EF5350")
             except: pass
-            h += f'<div style="aspect-ratio:1; background-color:{bg}; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center;"><span style="font-size:8px; color:#666;">{day}</span><span style="font-size:12px; font-weight:bold; color:{sc};">{stxt}</span></div>'
+            h += f'<div style="aspect-ratio:1; background-color:{bg}; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;"><div style="position:absolute; top:4px; left:6px; font-size:10px; color:#888;">{day}</div><span style="font-size:16px; font-weight:bold; color:{sc}; margin-top:8px;">{stxt}</span></div>'
     st.markdown(h + '</div></div></div>', unsafe_allow_html=True)
 
-with col_r:
+with col_chart:
     st.subheader("📈 흐름 분석")
-    st.markdown('<div class="chart-period-box">', unsafe_allow_html=True)
+    # [흐름 분석 버튼] 1년 추가, 3년 제거
     period = st.radio("P", ["1개월", "3개월", "6개월", "1년", "5년"], horizontal=True, label_visibility="collapsed")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
     cdf = df.tail({"1개월":22, "3개월":63, "6개월":126, "1년":252, "5년":1260}[period])
     b_d, s_d = len(cdf[cdf['Score'] <= 40]), len(cdf[cdf['Score'] >= 85])
-    st.markdown(f'<div style="font-size:12px; color:#AAA; text-align:right; margin-bottom:5px;">💰 40↓: <b style="color:#4CAF50;">{b_d}회</b> | 🔥 85↑: <b style="color:#EF5350;">{s_d}회</b></div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="font-size:14px; color:#AAA; text-align:right; margin-bottom:10px;">💰 40↓: <b style="color:#4CAF50;">{b_d}회</b> | 🔥 85↑: <b style="color:#EF5350;">{s_d}회</b></div>', unsafe_allow_html=True)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(go.Scatter(x=cdf.index, y=cdf['Close'], name="주가", line=dict(color='#FF5252', width=2)), secondary_y=False)
     fig.add_trace(go.Scatter(x=cdf.index, y=cdf['Score'], name="점수", fill='tozeroy', fillcolor='rgba(76, 175, 80, 0.1)', line=dict(color='rgba(76, 175, 80, 0.4)')), secondary_y=True)
@@ -177,4 +173,4 @@ with col_r:
 # 하단 가이드
 st.divider()
 st.subheader("📋 실전 운용 전략 가이드")
-st.markdown("""<table style="width:100%; border-collapse: collapse; background-color: #161618; border-radius: 10px; overflow: hidden; border: 1px solid #333;"><thead><tr><th style="background-color: #262730; color: #888; padding: 12px; border-bottom: 1px solid #333;">구간</th><th style="background-color: #262730; color: #888; padding: 12px; border-bottom: 1px solid #333;">상태</th><th style="background-color: #262730; color: #888; padding: 12px; border-bottom: 1px solid #333;">Action Plan</th></tr></thead><tbody><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #4CAF50; font-weight: bold;">0~20</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🚨공황</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">인생역전: <span style="color: #EF5350; font-weight: bold;">TQQQ 50% 매수</span></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #81C784; font-weight: bold;">21~30</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🛒침체</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">저가매수: <span style="color: #EF5350; font-weight: bold;">TQQQ 30% 매수</span></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #A5D6A7; font-weight: bold;">31~40</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🌱조정</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">가벼운매수: <span style="color: #EF5350; font-weight: bold;">TQQQ 10% 매수</span></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #00FFD1; font-weight: bold;">41~84</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">💤중립</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;"><b>QLD 적립 유지</b></td></tr><tr><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #EF5350; font-weight: bold;">85~100</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">🔥과열</td><td style="padding: 15px; border-bottom: 1px solid #333; text-align: center; color: #E0E0E0;">수익실현: <span style="color: #EF5350; font-weight: bold;">20% 매도</span></td></tr></tbody></table>""", unsafe_allow_html=True)
+st.markdown("""<table class="strategy-table"><thead><tr><th>구간</th><th>상태</th><th>Action Plan</th></tr></thead><tbody><tr><td style="color:#4CAF50;">0~20</td><td>🚨공황</td><td>인생역전: <span class="point-red">TQQQ 50% 매수</span></td></tr><tr><td style="color:#81C784;">21~30</td><td>🛒침체</td><td>저가매수: <span class="point-red">TQQQ 30% 매수</span></td></tr><tr><td style="color:#A5D6A7;">31~40</td><td>🌱조정</td><td>가벼운매수: <span class="point-red">TQQQ 10% 매수</span></td></tr><tr><td style="color:#00FFD1;">41~84</td><td>💤중립</td><td><b>QLD 적립 유지</b></td></tr><tr><td style="color:#EF5350;">85~100</td><td>🔥과열</td><td>수익실현: <span class="point-red">20% 매도</span></td></tr></tbody></table>""", unsafe_allow_html=True)
