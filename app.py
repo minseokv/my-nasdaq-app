@@ -9,7 +9,7 @@ from datetime import datetime
 # 1. 페이지 설정
 st.set_page_config(page_title="민석이의 나스닥100 투자", page_icon="🦁", layout="wide")
 
-# 2. 정밀 디자인 CSS
+# 2. 정밀 디자인 CSS (가독성 및 정렬 최적화)
 st.markdown("""
 <style>
     /* 전체 배경 */
@@ -17,7 +17,7 @@ st.markdown("""
     [data-testid="stHeader"] { background-color: #0E1117 !important; }
     h1, h2, h3, h4, p, span, div, label { color: #E0E0E0 !important; }
 
-    /* [1] 제목: 🦁 민석이의 아래 나스닥100 투자 수직 정렬 */
+    /* [1] 제목: 🦁 민석이의 아래 나스닥100 투자 정밀 정렬 */
     .title-area { margin-bottom: 25px; text-align: left; }
     .title-row1 { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; }
     .title-row2 { padding-left: 38px; font-size: 26px; font-weight: 800; margin-top: -5px; display: block; }
@@ -32,40 +32,40 @@ st.markdown("""
     .basis-label { font-size: 11px; color: #888; margin-bottom: 4px; }
     .basis-value { font-size: 16px; font-weight: bold; color: #00FFD1; }
 
-    /* [3] ★ 캘린더 네비게이션: 중앙 정렬 + 여유로운 간격 ★ */
+    /* [3] ★ 캘린더 네비게이션: 중앙 정렬 + 널찍한 간격 ★ */
     .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        justify-content: center !important; /* 중앙 정렬 */
-        gap: 30px !important; /* ◀ 와 날짜 사이의 엄청난 여유 */
+        justify-content: center !important; 
+        gap: 35px !important; /* ◀ 와 날짜 사이의 엄청난 여유 */
         width: 100% !important;
         margin-bottom: 10px;
     }
     
-    /* 동그라미 숨기기 */
+    /* 라디오 동그라미 숨기기 */
     div[data-testid="stRadio"] > div[role="radiogroup"] > label > div:first-child {
         display: none !important;
     }
 
     .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] > label {
-        background-color: transparent !important; /* 배경 투명하게 */
+        background-color: transparent !important;
         border: none !important;
         padding: 0 !important;
-        font-size: 18px !important;
+        font-size: 19px !important;
         font-weight: bold !important;
         color: #00FFD1 !important;
         cursor: pointer;
     }
 
-    /* 날짜 텍스트는 흰색으로 강조 */
+    /* 날짜 텍스트 중앙 강조 */
     .cal-nav-area div[data-testid="stRadio"] > div[role="radiogroup"] > label:nth-child(2) {
         color: #FFFFFF !important;
-        min-width: 160px !important;
+        min-width: 150px !important;
         text-align: center;
     }
 
-    /* [4] ★ 흐름 분석: 예전 버튼 스타일 (선택 시 빨간색 표시) 복구 ★ */
+    /* [4] ★ 흐름 분석: 예전 버튼 스타일 (선택 시 빨간색 강조) ★ */
     .chart-period-box div[data-testid="stRadio"] > div[role="radiogroup"] {
         display: flex !important;
         flex-direction: row !important;
@@ -77,11 +77,11 @@ st.markdown("""
         background-color: #1E1E1E !important;
         border: 1px solid #444 !important;
         border-radius: 8px !important;
-        padding: 6px 12px !important;
+        padding: 6px 14px !important;
         font-size: 13px !important;
         color: #AAA !important;
     }
-    /* 선택된 버튼 빨간색 강조 */
+    /* 선택된 기간 버튼 빨간색 테두리/글씨 */
     .chart-period-box div[data-testid="stRadio"] > div[role="radiogroup"] > label[data-baseweb="radio"] {
         border-color: #EF5350 !important;
         color: #EF5350 !important;
@@ -131,7 +131,7 @@ curr_score = int(last_row['Score'])
 # 4. 화면 구성 시작
 st.markdown(f'<div class="title-area"><div class="title-row1">🦁 민석이의</div><div class="title-row2">나스닥100 투자</div></div>', unsafe_allow_html=True)
 
-# [상단 점수 박스]
+# [상단 박스]
 if curr_score <= 20: g_t, g_d, g_c = "🚨 인생 역전 기회", "시장이 공포에 질렸습니다.<br><span class='point-red'>TQQQ 50% 매수</span>!!!", "#4CAF50"
 elif curr_score <= 30: g_t, g_d, g_c = "🛒 강력 매수", "확실한 저가 매수 찬스입니다.<br><span class='point-red'>TQQQ 30% 매수</span>!!", "#81C784"
 elif curr_score <= 40: g_t, g_d, g_c = "🌱 가벼운 매수", "건강한 조정 구간입니다.<br><span class='point-red'>TQQQ 10% 매수</span>!", "#A5D6A7"
@@ -152,7 +152,7 @@ col_l, col_r = st.columns([1, 1.6], gap="medium")
 with col_l:
     st.subheader("🗓️ 점수 캘린더")
     
-    # [달력 네비게이션] ◀          2025년 12월          ▶
+    # [달력 네비게이션] ◀          2025년 12월          ▶ (중앙 정렬)
     st.markdown('<div class="cal-nav-area">', unsafe_allow_html=True)
     current_nav_label = f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"
     nav_sel = st.radio("cal_nav_widget", [" ◀ ", current_nav_label, " ▶ "], horizontal=True, label_visibility="collapsed", index=1)
@@ -187,7 +187,7 @@ with col_l:
 
 with col_r:
     st.subheader("📈 흐름 분석")
-    # [흐름 분석 버튼] 예전 스타일 (빨간색 선택 표시) 복구
+    # [흐름 분석 버튼] 민석님이 원하시던 예전 스타일 복구
     st.markdown('<div class="chart-period-box">', unsafe_allow_html=True)
     period = st.radio("P", ["1개월", "3개월", "6개월", "3년", "5년"], horizontal=True, label_visibility="collapsed")
     st.markdown('</div>', unsafe_allow_html=True)
